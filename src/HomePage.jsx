@@ -75,7 +75,7 @@ export default function HomePage() {
               <button className="border border-[#3D6B4A] text-[#3D6B4A] px-8 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-[#3D6B4A] hover:text-white transition-all">Novidades →</button>
             </div>
             <div className="flex gap-8 pt-4 border-t border-[#B8D4B4]">
-              {[["500+", "Produtos"], ["4.9★", "Avaliação"], ["Free", "Envio +50€"]].map(([val, label]) => (
+              {[["500+", "Produtos"], ["Free", "Envio +50€"]].map(([val, label]) => (
                 <div key={label}>
                   <div className="text-lg font-semibold text-[#1A2E1A]">{val}</div>
                   <div className="text-xs text-[#8FAF8A] tracking-wide">{label}</div>
@@ -86,13 +86,6 @@ export default function HomePage() {
           <div className="hidden md:flex justify-center relative">
             <div className="w-64 h-80 bg-white bg-opacity-50 rounded-[140px_140px_20px_20px] flex items-center justify-center border border-white border-opacity-70">
               <span className="text-8xl">👗</span>
-            </div>
-            <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg p-3 flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#E8F0E6] rounded-full flex items-center justify-center text-lg">⭐</div>
-              <div>
-                <div className="text-base font-semibold text-[#2C3A2C]">4.9</div>
-                <div className="text-[10px] text-[#6B9E63]">Avaliação média</div>
-              </div>
             </div>
           </div>
         </div>
