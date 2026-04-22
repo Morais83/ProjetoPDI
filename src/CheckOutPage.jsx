@@ -7,7 +7,7 @@ const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
 
 const produtosCarrinho = [
-  { id: 1, nome: "Blazer Alfaiataria", marca: "Moda Chique", preco: 39.99, cor: "Preto", tamanho: "38", quantidade: 1, emoji: "🧥", bg: "bg-[#F0F5EE]" },
+  { id: 1, nome: "Blazer Alfaiataria", marca: "Moda ChiqueJOAO", preco: 39.99, cor: "Preto", tamanho: "38", quantidade: 1, emoji: "🧥", bg: "bg-[#F0F5EE]" },
   { id: 2, nome: "Vestido Linho Verde", marca: "Moda Chique", preco: 59.90, cor: "Verde", tamanho: "36", quantidade: 1, emoji: "👗", bg: "bg-[#F5F0EE]" },
   { id: 3, nome: "Blusa Seda Rosa", marca: "Moda Chique", preco: 49.90, cor: "Rosa", tamanho: "S", quantidade: 1, emoji: "👚", bg: "bg-[#F0F5EE]" },
 ];
@@ -411,4 +411,4 @@ export default function CheckoutPage() {
       <Footer />
     </div>
   );
-}
+}git 
