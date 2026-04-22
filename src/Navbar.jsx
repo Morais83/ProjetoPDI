@@ -78,6 +78,9 @@ export default function Navbar() {
                 {item}
               </a>
             ))}
+            <Link to="/admin/produtos" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+              Admin
+            </Link>
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-[#E2EBE0]">
               <button className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">🔍</button>
               <Link to="/login" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">👤</Link>
@@ -90,8 +93,8 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mega Menu */}
-      {menuAberto && (
+      {/* Mega Menu Roupa */}
+      {menuAberto === "roupa" && (
         <div style={sans} className="absolute left-0 right-0 z-40 bg-white border-b border-[#E2EBE0] shadow-lg">
           <div className="max-w-7xl mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">

@@ -58,10 +58,6 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-3 h-3 accent-[#3D6B4A]" />
-                <span className="text-xs text-[#5C6E5C]">Lembrar-me</span>
-              </label>
               <a href="#" className="text-xs text-[#3D6B4A] hover:underline">Esqueceste-te da senha?</a>
             </div>
 
