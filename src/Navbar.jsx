@@ -78,8 +78,11 @@ export default function Navbar() {
                 {item}
               </a>
             ))}
-            <Link to="/admin/produtos" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+            <Link to="/admin/categorias" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
               Admin
+            </Link>
+            <Link to="/perfil" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+              Perfil
             </Link>
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-[#E2EBE0]">
               <button className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">🔍</button>
