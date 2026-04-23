@@ -29,7 +29,7 @@ export default function Navbar() {
     <div ref={menuRef}>
       <nav style={sans} className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "shadow-sm" : ""} bg-white border-b border-[#E2EBE0]`}>
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-
+          
           {/* Esquerda */}
           <div className="hidden md:flex items-center gap-7">
             <button
@@ -73,11 +73,12 @@ export default function Navbar() {
 
           {/* Direita */}
           <div className="hidden md:flex items-center gap-7">
-            {["Promoções", "Marcas"].map((item) => (
-              <a key={item} href="#" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
-                {item}
-              </a>
-            ))}
+            <Link to="/promoçoes" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+              Promoções
+            </Link>
+            <Link to="/marcas" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+              Marcas
+            </Link>
             <Link to="/admin/categorias" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
               Admin
             </Link>
@@ -87,10 +88,10 @@ export default function Navbar() {
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-[#E2EBE0]">
               <button className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">🔍</button>
               <Link to="/login" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">👤</Link>
-              <button className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">
+              <Link to="/carrinho" className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">
                 🛍️
                 <span className="absolute -top-1.5 -right-1.5 bg-[#3D6B4A] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -121,17 +122,6 @@ export default function Navbar() {
                     "Roupa Interior", "Macacões",
                   ].map((link, i) => (
                     <a key={i} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
-                      {link}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Compra por Fit</p>
-                <div className="flex flex-col gap-2">
-                  {["Maternidade", "Tamanhos grandes", "Petite", "Tall"].map((link) => (
-                    <a key={link} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
                       {link}
                     </a>
                   ))}
@@ -191,29 +181,6 @@ export default function Navbar() {
                   ))}
                 </div>
               </div>
-
-              <div>
-                <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Por Material</p>
-                <div className="flex flex-col gap-2">
-                  {["Couro", "Tecido", "Palha", "Metal", "Sintético"].map((link) => (
-                    <a key={link} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
-                      {link}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Destaques</p>
-                <div className="flex flex-col gap-2">
-                  {["Novidades", "Promoções", "Mais Vendidos", "Coleção Primavera"].map((link) => (
-                    <a key={link} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
-                      {link}
-                    </a>
-                  ))}
-                </div>
-              </div>
-
             </div>
           </div>
         </div>

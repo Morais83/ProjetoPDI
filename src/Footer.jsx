@@ -9,7 +9,7 @@ export default function Footer() {
     { label: "Calçado", path: "/catalogo" },
     { label: "Acessórios", path: "/catalogo" },
     { label: "Promoções", path: "/catalogo" },
-    { label: "Marcas", path: "/catalogo" },
+    { label: "Marcas", path: "/marcas" },
   ];
 
   const ajudaLinks = [

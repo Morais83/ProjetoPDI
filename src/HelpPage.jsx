@@ -149,9 +149,9 @@ export default function HelpPage() {
 
         {/* Sidebar */}
         <div className="w-48 flex-shrink-0">
-          <div className="bg-[#2C3A2C] rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#3D6B4A]">
-              <p className="text-xs tracking-widest uppercase text-[#6B9E63] font-medium">Ajuda</p>
+          <div className="bg-[#3D6B4A] rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#E8F0E6]">
+              <p className="text-xs tracking-widest uppercase text-white font-bold">Ajuda</p>
             </div>
             <nav className="py-2">
               {topicos.map((t) => (
@@ -160,8 +160,8 @@ export default function HelpPage() {
                   onClick={() => { setTopicoAtivo(t.id); setAccordionAberto(null); }}
                   className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${
                     topicoAtivo === t.id
-                      ? "text-white font-medium bg-[#3D6B4A]"
-                      : "text-[#A8C4A8] hover:text-white hover:bg-[#3D6B4A]"
+                      ? "text-white font-medium bg-[#4F8A61]"
+                      : "text-[#A8C4A8] hover:text-white hover:bg-[#5A9C70]"
                   }`}
                 >
                   {t.label}

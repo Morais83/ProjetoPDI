@@ -12,6 +12,9 @@ import AdminUtilizadores from "./admin/AdminUtilizadores";
 import ProfilePage from "./ProfilePage";
 import HelpPage from "./HelpPage";
 import AboutPage from "./AboutPage";
+import CheckoutPage from "./CheckoutPage";
+import CartPage from "./CartPage";
+import BrandsPage from "./BrandsPage";
 
 export default function App() {
   return (
@@ -29,6 +32,9 @@ export default function App() {
         <Route path="/perfil" element={<ProfilePage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/sobre-nos" element={<AboutPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/carrinho" element={<CartPage />} />
+        <Route path="/marcas" element={<BrandsPage />} />
       </Routes>
     </Router>
   );
