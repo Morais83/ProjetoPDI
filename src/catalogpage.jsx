@@ -35,6 +35,7 @@ export default function CatalogPage() {
   const [coresSelecionadas, setCoresSelecionadas] = useState([]);
   const [precoMax, setPrecoMax] = useState(500);
   const [precoMin, setPrecoMin] = useState(0);
+  const [apenasPromocao, setApenasPromocao] = useState(false);
   const [marcaPesquisa, setMarcaPesquisa] = useState("");
   const [wishlist, setWishlist] = useState([]);
 
@@ -59,6 +60,7 @@ export default function CatalogPage() {
 
   const produtosFiltrados = todosProdutos.filter((p) => {
     if (categoriaAtiva !== "Explora tudo" && p.categoria !== categoriaAtiva) return false;
+    if (apenasPromocao && !p.precoAnt) return false;
     const preco = parseFloat(p.preco.replace(",", "."));
     if (preco < precoMin || preco > precoMax) return false;
     return true;
@@ -87,6 +89,19 @@ export default function CatalogPage() {
 
         {/* Sidebar Filtros */}
         <div className="w-48 flex-shrink-0">
+
+          {/* Promoção */}
+          <div className="mb-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={apenasPromocao}
+                onChange={(e) => setApenasPromocao(e.target.checked)}
+                className="w-3 h-3 accent-[#3D6B4A]"
+              />
+              <span className="text-sm font-medium text-[#2C3A2C]">Promoção</span>
+            </label>
+          </div>
 
           {/* Tamanho */}
           <div className="mb-6">

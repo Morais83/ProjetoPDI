@@ -73,7 +73,7 @@ export default function Navbar() {
 
           {/* Direita */}
           <div className="hidden md:flex items-center gap-7">
-            <Link to="/promocoes" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+            <Link to="/promoçoes" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
               Promoções
             </Link>
             <Link to="/marcas" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">

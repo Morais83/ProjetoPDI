@@ -15,8 +15,6 @@ import AboutPage from "./AboutPage";
 import CheckoutPage from "./CheckoutPage";
 import CartPage from "./CartPage";
 import BrandsPage from "./BrandsPage";
-import PromoPage from "./PromoPage";
-
 
 export default function App() {
   return (
@@ -37,7 +35,6 @@ export default function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/carrinho" element={<CartPage />} />
         <Route path="/marcas" element={<BrandsPage />} />
-        <Route path="/promocoes" element={<PromoPage />} />
       </Routes>
     </Router>
   );
