@@ -30,6 +30,34 @@ export default function RegisterPage() {
     }));
   };
 
+  const handleRegister = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch("http://localhost:5000/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Erro ao registar");
+    }
+
+    console.log("Sucesso:", data);
+    alert("Conta criada com sucesso!");
+
+    // aqui podes redirecionar ou mostrar mensagem
+  } catch (error) {
+    console.error("Erro:", error.message);
+    alert("Erro ao criar conta!");
+  }
+};
+
   return (
     <div style={sans} className="h-screen flex bg-white overflow-hidden">
       
@@ -49,8 +77,8 @@ export default function RegisterPage() {
             <p className="text-sm text-[#5C6E5C]">Cria a tua conta para uma experiência personalizada.</p>
           </div>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-            {/* NOME */}
+        <form className="space-y-5" onSubmit={handleRegister}>
+              {/* NOME */}
             <div>
               <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-2 font-medium">Nome</label>
               <input 
