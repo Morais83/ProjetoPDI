@@ -14,37 +14,7 @@ export default function LoginPage() {
 
   const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
   const sans = { fontFamily: "'Jost', sans-serif" };
-const handleLogin = async (e) => {
-  e.preventDefault();
 
-  try {
-    const response = await fetch("http://localhost:5000/api/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Erro no login");
-    }
-
-    console.log("Login sucesso:", data);
-      // const redirectTo = data.data.isAdmin ? '/admin-dashboard' : '/dashboard';
-      const redirectTo = "/"
-      window.location.href = redirectTo;
-      // window.location.reload();
-  } catch (error) {
-    console.error("Erro:", error.message);
-    alert(error.message);
-  }
-};
   return (
     <div style={sans} className="min-h-screen flex bg-white">
       
@@ -64,8 +34,8 @@ const handleLogin = async (e) => {
             <p className="text-sm text-[#5C6E5C]">Introduz os teus dados para acederes à tua conta.</p>
           </div>
 
-            <form className="space-y-5" onSubmit={handleLogin}>
-              <div>
+          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+            <div>
               <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-2 font-medium">Email</label>
               <input 
                 type="email" 

@@ -22,6 +22,7 @@ export default function Footer() {
 
   const empresaLinks = [
     { label: "Sobre Nós", path: "/sobre-nos", externo: false },
+    { label: "Termos e Condições Gerais", path: "/termoscondiçoes.pdf", externo: true },
     { label: "Política de Privacidade", path: "/politicaprivacidade.pdf", externo: true },
   ];
 
@@ -80,6 +81,11 @@ export default function Footer() {
               <Link to="/sobre-nos" onClick={() => window.scrollTo(0, 0)} className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
                 Sobre Nós
               </Link>
+            </li>
+            <li>
+              <a href="/termoscondiçoes.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
+                Termos e Condições Gerais
+              </a>
             </li>
             <li>
               <a href="/politicaprivacidade.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
+import { registar } from './api';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ export default function RegisterPage() {
     prefixo: "+351",
     aceitaTermos: false
   });
+  const [erro, setErro] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -20,7 +23,6 @@ export default function RegisterPage() {
 
   const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
   const sans = { fontFamily: "'Jost', sans-serif" };
-  const [isOpen, setIsOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -30,33 +32,30 @@ export default function RegisterPage() {
     }));
   };
 
-  const handleRegister = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErro("");
 
-  try {
-    const response = await fetch("http://localhost:5000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || "Erro ao registar");
+    if (!formData.aceitaTermos) {
+      setErro("Tens de aceitar a Política de Privacidade");
+      return;
     }
 
-    console.log("Sucesso:", data);
-    alert("Conta criada com sucesso!");
+    const resultado = await registar({
+      nome: formData.nome,
+      email: formData.email,
+      password: formData.password,
+      telefone: formData.telefone,
+      prefixo_tel: formData.prefixo,
+      aceita_termos: formData.aceitaTermos,
+    });
 
-    // aqui podes redirecionar ou mostrar mensagem
-  } catch (error) {
-    console.error("Erro:", error.message);
-    alert("Erro ao criar conta!");
-  }
-};
+    if (resultado.erro) {
+      setErro(resultado.erro);
+    } else {
+      window.location.href = '/login';
+    }
+  };
 
   return (
     <div style={sans} className="h-screen flex bg-white overflow-hidden">
@@ -77,8 +76,8 @@ export default function RegisterPage() {
             <p className="text-sm text-[#5C6E5C]">Cria a tua conta para uma experiência personalizada.</p>
           </div>
 
-        <form className="space-y-5" onSubmit={handleRegister}>
-              {/* NOME */}
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {/* NOME */}
             <div>
               <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-2 font-medium">Nome</label>
               <input 
@@ -172,7 +171,6 @@ export default function RegisterPage() {
                   name="aceitaTermos" 
                   onChange={handleChange} 
                   className="w-3 h-3 accent-[#3D6B4A] cursor-pointer" 
-                  required 
                 />
               </label>
               <span className="text-xs text-[#5C6E5C] select-none">
@@ -188,7 +186,15 @@ export default function RegisterPage() {
               </span>
             </div>
 
-            <button className="w-full bg-[#3D6B4A] text-white py-4 rounded-full text-xs tracking-widest uppercase hover:bg-[#2C5038] transition-all shadow-lg shadow-green-900/10">
+            {/* ERRO */}
+            {erro && (
+              <p className="text-xs text-red-500">{erro}</p>
+            )}
+
+            <button
+              onClick={handleSubmit}
+              className="w-full bg-[#3D6B4A] text-white py-4 rounded-full text-xs tracking-widest uppercase hover:bg-[#2C5038] transition-all shadow-lg shadow-green-900/10"
+            >
               Criar Conta
             </button>
           </form>

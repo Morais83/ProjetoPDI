@@ -138,33 +138,6 @@ export default function CartPage() {
                 </div>
               ))}
 
-              {/* Código de Desconto */}
-              <div className="bg-white rounded-2xl border border-[#E8F0E6] p-5">
-                <p className="text-xs tracking-widest uppercase text-[#6B9E63] mb-3 font-medium">Código de Desconto</p>
-                {descontoAplicado ? (
-                  <div className="flex items-center gap-2 text-sm text-[#3D6B4A]">
-                    <span>✓</span>
-                    <span>Código <strong>LILI10</strong> aplicado — 10% de desconto!</span>
-                  </div>
-                ) : (
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={codigoDesconto}
-                      onChange={(e) => setCodigoDesconto(e.target.value)}
-                      placeholder="Introduz o teu código"
-                      className="flex-1 border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent transition-all placeholder:text-gray-300"
-                    />
-                    <button
-                      onClick={aplicarDesconto}
-                      className="px-5 py-2 rounded-full border border-[#C8DFC4] text-xs tracking-widest uppercase text-[#3D6B4A] hover:bg-[#3D6B4A] hover:text-white transition-all"
-                    >
-                      Aplicar
-                    </button>
-                  </div>
-                )}
-              </div>
-
               {/* Continuar a comprar */}
               <Link to="/catalogo" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center gap-2 text-sm text-[#3D6B4A] hover:underline">
                 ← Continuar a comprar
