@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Adicionado useNavigate
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuAberto, setMenuAberto] = useState(null);
+  const [numArtigos, setNumArtigos] = useState(0);
+  const [pesquisaAberta, setPesquisaAberta] = useState(false);
+  const [termoPesquisa, setTermoPesquisa] = useState("");
   const menuRef = useRef(null);
+  const utilizador = JSON.parse(localStorage.getItem('utilizador'));
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -15,21 +20,45 @@ export default function Navbar() {
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuAberto(false);
+        setMenuAberto(null);
+        setPesquisaAberta(false); 
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const atualizar = () => {
+      try {
+        const carrinho = JSON.parse(localStorage.getItem('carrinho')) || [];
+        setNumArtigos(carrinho.reduce((acc, p) => acc + p.quantidade, 0));
+      } catch {
+        setNumArtigos(0);
+      }
+    };
+    atualizar();
+    window.addEventListener('carrinho-atualizado', atualizar);
+    return () => window.removeEventListener('carrinho-atualizado', atualizar);
+  }, []);
+
+  const handlePesquisa = (e) => {
+    e.preventDefault();
+    if (termoPesquisa.trim() !== "") {
+      navigate(`/catalogo?q=${encodeURIComponent(termoPesquisa.trim())}`);
+      
+      setPesquisaAberta(false);
+      setTermoPesquisa("");
+    }
+  };
+
   const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
   const sans = { fontFamily: "'Jost', sans-serif" };
-
   return (
     <div ref={menuRef}>
       <nav style={sans} className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "shadow-sm" : ""} bg-white border-b border-[#E2EBE0]`}>
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-
+          
           {/* Esquerda */}
           <div className="hidden md:flex items-center gap-7">
             <button
@@ -73,24 +102,70 @@ export default function Navbar() {
 
           {/* Direita */}
           <div className="hidden md:flex items-center gap-7">
-            {["Promoções", "Marcas"].map((item) => (
-              <a key={item} href="#" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
-                {item}
-              </a>
-            ))}
-            <Link to="/admin/categorias" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
-              Admin
+            <Link to="/promocoes" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+              Promoções
             </Link>
-            <Link to="/perfil" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
-              Perfil
+            <Link to="/marcas" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+              Marcas
             </Link>
+
+            <form onSubmit={handlePesquisa} className="flex items-center relative">
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out flex items-center ${pesquisaAberta ? 'w-40 opacity-100' : 'w-0 opacity-0'}`}>
+                <input
+                  type="text"
+                  placeholder="Pesquisar..."
+                  value={termoPesquisa}
+                  onChange={(e) => setTermoPesquisa(e.target.value)}
+                  className="w-full text-xs tracking-wider border-b border-[#3D6B4A] bg-transparent focus:outline-none text-[#4A5C4A] placeholder:text-[#4A5C4A]/50 pb-0.5 mr-2"
+                />
+              </div>
+              <button 
+                type={pesquisaAberta ? "submit" : "button"}
+                onClick={() => {
+                  if (!pesquisaAberta) {
+                    setPesquisaAberta(true);
+                    setMenuAberto(null); 
+                  } else if (!termoPesquisa.trim()) {
+                    setPesquisaAberta(false); 
+                  }
+                }}
+                className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base"
+              >
+                🔍
+              </button>
+            </form>
+
             <div className="flex items-center gap-3 ml-2 pl-4 border-l border-[#E2EBE0]">
-              <button className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">🔍</button>
-              <Link to="/login" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">👤</Link>
-              <Link to="/carrinho" className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">
-                🛍️
-                <span className="absolute -top-1.5 -right-1.5 bg-[#3D6B4A] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">3</span>
-              </Link>
+              {utilizador ? (
+                <>
+                  {utilizador.perfil === 'admin' ? (
+                    <Link to="/admin/categorias" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+                      Admin
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/perfil" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">👤</Link>
+                      <Link to="/carrinho" className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">
+                        🛍️
+                        {numArtigos > 0 && (
+                          <span className="absolute -top-1.5 -right-1.5 bg-[#3D6B4A] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                            {numArtigos}
+                          </span>
+                        )}
+                      </Link>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="text-xs tracking-widests uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+                    Login
+                  </Link>
+                  <Link to="/register" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+                    Registo
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -101,15 +176,10 @@ export default function Navbar() {
         <div style={sans} className="absolute left-0 right-0 z-40 bg-white border-b border-[#E2EBE0] shadow-lg">
           <div className="max-w-7xl mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">
-
               <div className="col-span-2">
                 <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Compra por Categorias</p>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                  <Link
-                    to="/catalogo"
-                    onClick={() => setMenuAberto(null)}
-                    className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1"
-                  >
+                  <Link to="/catalogo?departamento=roupa" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
                     Explora tudo
                   </Link>
                   {[
@@ -120,9 +190,14 @@ export default function Navbar() {
                     "Malhas", "Blazers e coletes",
                     "Roupa Interior", "Macacões",
                   ].map((link, i) => (
-                    <a key={i} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
+                    <Link 
+                      key={i} 
+                      to={`/catalogo?departamento=roupa&categoria=${encodeURIComponent(link)}`} 
+                      onClick={() => setMenuAberto(null)} 
+                      className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1"
+                    >
                       {link}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -136,20 +211,26 @@ export default function Navbar() {
         <div style={sans} className="absolute left-0 right-0 z-40 bg-white border-b border-[#E2EBE0] shadow-lg">
           <div className="max-w-7xl mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">
-
               <div className="col-span-2">
                 <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Compra por Tipo</p>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                  <Link to="/catalogo?departamento=calcado" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
+                    Explora tudo
+                  </Link>
                   {[
-                    "Explora tudo", "Sapatilhas",
+                    "Sapatilhas",
                     "Sandálias", "Botas",
-                    "Botins", "Mules",
-                    "Mocassins", "Saltos altos",
+                    "Botins", "Saltos altos",
                     "Sapatos rasos", "Chinelos",
                   ].map((link, i) => (
-                    <a key={i} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
+                    <Link 
+                      key={i} 
+                      to={link === "Explora tudo" ? "/catalogo?departamento=calcado" : `/catalogo?departamento=calcado&categoria=${encodeURIComponent(link)}`} 
+                      onClick={() => setMenuAberto(null)} 
+                      className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1"
+                    >
                       {link}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -163,19 +244,27 @@ export default function Navbar() {
         <div style={sans} className="absolute left-0 right-0 z-40 bg-white border-b border-[#E2EBE0] shadow-lg">
           <div className="max-w-7xl mx-auto px-8 py-8">
             <div className="grid grid-cols-4 gap-8">
-
               <div className="col-span-2">
                 <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-4">Compra por Tipo</p>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                  <Link to="/catalogo?departamento=acessorios" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
+                    Explora tudo
+                  </Link>
                   {[
-                    "Explora tudo", "Malas de mão",
+                    "Malas de mão",
                     "Carteiras", "Mochilas",
                     "Cintos", "Chapéus",
-                    "Lenços",
+                    "Lenços", "Óculos de sol",
+                    "Joalharia", "Bijuteria",
                   ].map((link, i) => (
-                    <a key={i} href="#" onClick={() => setMenuAberto(null)} className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1">
+                    <Link 
+                      key={i} 
+                      to={link === "Explora tudo" ? "/catalogo?departamento=acessorios" : `/catalogo?departamento=acessorios&categoria=${encodeURIComponent(link)}`} 
+                      onClick={() => setMenuAberto(null)} 
+                      className="text-sm text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors py-1"
+                    >
                       {link}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </div>

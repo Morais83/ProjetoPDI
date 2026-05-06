@@ -1,61 +1,31 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
-import GuiaTamanhos from "./GuiaTamanhos";
+import { Link, useParams } from "react-router-dom";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import GuiaTamanhos from "./guiatamanhos";
+import { verificarFavorito, adicionarFavorito, removerFavorito } from './api';
+import { adicionarAoCarrinho } from './cart';
 
-const imagens = [
-  { id: 1, emoji: "🧥" },
-  { id: 2, emoji: "🧥" },
-  { id: 3, emoji: "🧥" },
-  { id: 4, emoji: "🧥" },
-  { id: 5, emoji: "🧥" },
-  { id: 6, emoji: "🧥" },
-];
-
-const tamanhos = ["34", "36", "38", "40", "42", "44", "46"];
-
-const produtosRelacionados = [
-  { id: 1, nome: "Blazer Creme", preco: "79,90", emoji: "🧥", bg: "bg-[#F5F0EE]"},
-  { id: 2, nome: "Casaco Linho", preco: "94,90", emoji: "🧥", bg: "bg-[#EEF5EC]"}, 
-  { id: 3, nome: "Blazer Xadrez", preco: "69,90", emoji: "🧥", bg: "bg-[#F0F5EE]"},
-  { id: 4, nome: "Colete Alfaiataria", preco: "54,90", emoji: "🧥", bg: "bg-[#F5F0EE]"},
-];
-
-const tagStyles = {
-  Novo: "bg-[#E8F0E6] text-[#3D6B4A]",
-  Bestseller: "bg-[#FEF9E7] text-[#A67C00]",
-  Sale: "bg-[#FDECEA] text-[#C0392B]",
-};
-
-const accordionItems = [
-  {
-    title: "Descrição",
-    content: "Blazer de alfaiataria em tecido premium. Corte estruturado e elegante, ideal para look casual chic ou mais formal. Forro interior suave e confortável.",
-  },
-  {
-    title: "Materiais",
-    content: "65% Poliéster, 30% Viscose, 5% Elastano. Tecido de alta qualidade com ligeira elasticidade para maior conforto.",
-  },
-  {
-    title: "Guia de Cuidados",
-    content: "Lavagem à mão ou máquina a 30°C. Não usar secador. Engomar a temperatura média pelo avesso. Não usar lixívia.",
-  },
-  {
-    title: "Informações do Fabricante",
-    content: "Produzido em Portugal. Moda Chique — Lili Store. Comprometidos com a produção responsável e sustentável.",
-  },
-];
+const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
+const sans = { fontFamily: "'Jost', sans-serif" };
 
 export default function ProductPage() {
+  const { id } = useParams();
+  const [produto, setProduto] = useState(null);
+  const [produtosRelacionados, setProdutosRelacionados] = useState([]);
   const [imagemAtiva, setImagemAtiva] = useState(0);
+  const [varianteSelecionada, setVarianteSelecionada] = useState(null);
   const [tamanhoSelecionado, setTamanhoSelecionado] = useState(null);
+  const [corSelecionada, setCorSelecionada] = useState(null);
   const [quantidade, setQuantidade] = useState(1);
   const [wishlist, setWishlist] = useState(false);
+  const utilizador = JSON.parse(localStorage.getItem('utilizador'));
   const [accordionAberto, setAccordionAberto] = useState(null);
   const [adicionado, setAdicionado] = useState(false);
-  const [guiaAberto, setGuiaAberto] = useState(false); // ✅ Movido para dentro do componente
-
+  const [guiaAberto, setGuiaAberto] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [lightboxAberto, setLightboxAberto] = useState(false);
+  
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
@@ -63,35 +33,147 @@ export default function ProductPage() {
     document.head.appendChild(link);
   }, []);
 
-  const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
-  const sans = { fontFamily: "'Jost', sans-serif" };
+  useEffect(() => {
+    carregarProduto();
+  }, [id]);
+
+  useEffect(() => {
+    if (!produto || !utilizador) return;
+    verificarFavorito(produto.id_produto).then(dados => setWishlist(dados.favorito));
+  }, [produto]);
+
+  const carregarProduto = async () => {
+    setLoading(true);
+    setTamanhoSelecionado(null);
+    setCorSelecionada(null);
+    setVarianteSelecionada(null);
+    setImagemAtiva(0);
+    try {
+      const res = await fetch(`http://localhost:5000/api/produtos/${id}`);
+      const dados = await res.json();
+      setProduto(dados);
+
+      const resRel = await fetch(`http://localhost:5000/api/produtos`);
+      const todos = await resRel.json();
+      const relacionados = todos
+        .filter(p => p.id_categoria === dados.id_categoria && p.id_produto !== dados.id_produto)
+        .slice(0, 4);
+      setProdutosRelacionados(relacionados);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  const ordemTamanhos = ["XS", "S", "M", "L", "XL", "XXL", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44"];
+  const tamanhos = produto
+    ? [...new Set(produto.variantes?.map(v => v.tamanho))].sort((a, b) => ordemTamanhos.indexOf(a) - ordemTamanhos.indexOf(b))
+    : [];
+  const cores = produto ? [...new Set(produto.variantes?.map(v => v.cor))] : [];
+
+  useEffect(() => {
+    if (!produto || !tamanhoSelecionado || !corSelecionada) return;
+    const variante = produto.variantes?.find(v => v.tamanho === tamanhoSelecionado && v.cor === corSelecionada);
+    setVarianteSelecionada(variante || null);
+  }, [tamanhoSelecionado, corSelecionada, produto]);
 
   const handleAdicionar = () => {
-    if (!tamanhoSelecionado) return;
+    if (!varianteSelecionada) return;
+
+    adicionarAoCarrinho({
+      id_variante: varianteSelecionada.id_variante,
+      id_produto: produto.id_produto,
+      nome_produto: produto.nome_produto,
+      nome_marca: produto.nome_marca,
+      preco: parseFloat(produto.preco),
+      cor: varianteSelecionada.cor,
+      tamanho: varianteSelecionada.tamanho,
+      quantidade: quantidade,
+      imagem_url: produto.imagens?.[0]?.url || null,
+    });
+
     setAdicionado(true);
     setTimeout(() => setAdicionado(false), 2000);
+
+    window.dispatchEvent(new Event('carrinho-atualizado'));
   };
+  
+  const handleWishlist = async () => {
+    if (!utilizador) {
+      window.location.href = '/login';
+      return;
+    }
+    if (wishlist) {
+      await removerFavorito(produto.id_produto);
+      setWishlist(false);
+    } else {
+      await adicionarFavorito(produto.id_produto);
+      setWishlist(true);
+    }
+  };
+
+  const getDepartamentoInfo = (categoria) => {
+    if (!categoria) return null;
+    
+    const listasDepartamentos = {
+      roupa: ["Blusas", "Vestidos", "Sobretudos", "Calças e Calções", "Saias", "T-shirt e Tops", "Roupa de banho", "Casacos", "Sweatshirts e Hoodies", "Malhas", "Blazers e coletes", "Roupa Interior", "Macacões"],
+      calcado: ["Sapatilhas", "Sandálias", "Botas", "Botins", "Saltos altos", "Sapatos rasos", "Chinelos"],
+      acessorios: ["Malas de mão", "Carteiras", "Mochilas", "Cintos", "Chapéus", "Lenços", "Óculos de sol", "Joalharia", "Bijuteria"]
+    };
+
+    if (listasDepartamentos.calcado.includes(categoria)) return { id: "calcado", label: "Calçado" };
+    if (listasDepartamentos.acessorios.includes(categoria)) return { id: "acessorios", label: "Acessórios" };
+    
+    return { id: "roupa", label: "Roupa" };
+  };
+
+  if (loading) return (
+    <div style={sans} className="min-h-screen bg-[#F7F9F5] flex items-center justify-center">
+      <p className="text-sm text-[#8FAF8A]">A carregar produto...</p>
+    </div>
+  );
+
+  if (!produto) return (
+    <div style={sans} className="min-h-screen bg-[#F7F9F5] flex items-center justify-center">
+      <p className="text-sm text-[#8FAF8A]">Produto não encontrado.</p>
+    </div>
+  );
+
+  const accordionItems = [
+    { title: "Descrição", content: produto.descricao || "—" },
+    { title: "Materiais", content: produto.materiais || "—" },
+    { title: "Guia de Cuidados", content: produto.guia_cuidados || "—" },
+    { title: "Informações do Fabricante", content: "Moda Chique — Lili Store. Comprometidos com a produção responsável e sustentável." },
+  ];
+
+  const departamento = getDepartamentoInfo(produto.nome_categoria);
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-
-      {/* Announce bar */}
       <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
         ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
       </div>
 
       <Navbar />
 
-      {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center gap-2 text-xs text-[#8FAF8A]">
           <Link to="/" className="hover:text-[#3D6B4A] transition-colors">Início</Link>
           <span>/</span>
-          <a href="#" className="hover:text-[#3D6B4A] transition-colors">Roupa</a>
-          <span>/</span>
-          <a href="#" className="hover:text-[#3D6B4A] transition-colors">Blazers e Coletes</a>
-          <span>/</span>
-          <span className="text-[#3D6B4A]">Blazer Alfaiataria</span>
+          
+          {departamento && (
+            <>
+              <Link 
+                to={`/catalogo?departamento=${departamento.id}`} 
+                className="hover:text-[#3D6B4A] transition-colors"
+              >
+                {departamento.label}
+              </Link>
+              <span>/</span>
+            </>
+          )}
+          
+          <span className="text-[#3D6B4A]">{produto.nome_produto}</span>
         </div>
       </div>
 
@@ -99,64 +181,89 @@ export default function ProductPage() {
       <div className="max-w-7xl mx-auto px-8 pb-16">
         <div className="grid md:grid-cols-2 gap-12 items-start">
 
-          {/* Galeria de Imagens */}
+          {/* Galeria */}
           <div className="flex gap-4">
             <div className="flex flex-col gap-3">
-              {imagens.map((img, i) => (
+              {produto.imagens?.length > 0 ? produto.imagens.map((img, i) => (
                 <div
-                  key={img.id}
+                  key={i}
                   onClick={() => setImagemAtiva(i)}
-                  className={`w-16 h-20 rounded-xl flex items-center justify-center cursor-pointer border-2 transition-all text-2xl bg-white ${
+                  className={`w-16 h-20 rounded-xl cursor-pointer border-2 transition-all overflow-hidden bg-white ${
                     imagemAtiva === i ? "border-[#3D6B4A]" : "border-[#E8F0E6] hover:border-[#C8DFC4]"
                   }`}
                 >
-                  {img.emoji}
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
                 </div>
-              ))}
+              )) : (
+                <div className="w-16 h-20 rounded-xl border-2 border-[#3D6B4A] bg-white flex items-center justify-center text-2xl text-[#C8DFC4]">📷</div>
+              )}
             </div>
 
-            <div className="flex-1 relative">
-              <div className="w-full aspect-[3/4] bg-white rounded-2xl flex items-center justify-center border border-[#E8F0E6] overflow-hidden">
-                <span className="text-[10rem]">🧥</span>
+            <div className="flex-1">
+              <div
+                onClick={() => produto.imagens?.length > 0 && setLightboxAberto(true)}
+                className="w-full aspect-[3/4] bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden flex items-center justify-center cursor-zoom-in relative group"
+              >
+                {produto.imagens?.length > 0 ? (
+                  <>
+                    <img src={produto.imagens[imagemAtiva]?.url} alt={produto.nome_produto} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full px-3 py-1.5 text-xs text-[#3D6B4A] font-medium">🔍 Ver em detalhe</span>
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-6xl text-[#C8DFC4]">📷</span>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Informações do Produto */}
+          {/* Informações */}
           <div className="pt-2">
             <div className="mb-6">
-              <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-1">Blazer by Moda Chique</p>
-              <h1 style={serif} className="text-4xl font-semibold text-[#1A2E1A] mb-3">Blazer Alfaiataria</h1>
+              <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-1">{produto.nome_marca || 'Moda Chique'}</p>
+              <h1 style={serif} className="text-4xl font-semibold text-[#1A2E1A] mb-3">{produto.nome_produto}</h1>
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-semibold text-[#3D6B4A]" style={serif}>39,99€</span>
+                <span style={serif} className="text-3xl font-semibold text-[#3D6B4A]">{parseFloat(produto.preco).toFixed(2).replace('.', ',')}€</span>
+                {produto.preco_anterior && (
+                  <span className="text-lg text-gray-400 line-through">{parseFloat(produto.preco_anterior).toFixed(2).replace('.', ',')}€</span>
+                )}
               </div>
             </div>
 
             {/* Cor */}
-            <div className="mb-6">
-              <p className="text-xs tracking-widest uppercase text-[#6B9E63] mb-3 font-medium">
-                Cor: <span className="text-[#2C2C2C] normal-case tracking-normal font-normal">Preto</span>
-              </p>
-              <div className="flex gap-2">
-                {["bg-[#1A1A1A]", "bg-[#8B7355]", "bg-[#F5F0EE]", "bg-[#3D6B4A]"].map((cor, i) => (
-                  <button
-                    key={i}
-                    className={`w-8 h-8 rounded-full border-2 ${cor} ${i === 0 ? "border-[#3D6B4A] scale-110" : "border-[#E8F0E6] hover:border-[#C8DFC4]"} transition-all`}
-                  />
-                ))}
-              </div>
-            </div>
+              {cores.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-xs tracking-widest uppercase text-[#6B9E63] mb-3 font-medium">
+                    Cor: <span className="text-[#2C2C2C] normal-case tracking-normal font-normal">{corSelecionada || "Seleciona uma cor"}</span>
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {cores.map((cor, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCorSelecionada(cor)}
+                        className={`px-4 py-1.5 rounded-full border text-xs transition-all ${
+                          corSelecionada === cor
+                            ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
+                            : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
+                        }`}
+                      >
+                        {cor}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             {/* Tamanho */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs tracking-widest uppercase text-[#6B9E63] font-medium">Tamanho</p>
-                <button
-                  onClick={() => setGuiaAberto(true)}
-                  className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5 hover:text-[#3D6B4A] transition-colors"
-                >
-                  Guia de Tamanhos
-                </button>
+                {produto.id_categoria_pai === 1 && (
+                  <button onClick={() => setGuiaAberto(true)} className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5 hover:text-[#3D6B4A] transition-colors">
+                    Guia de Tamanhos
+                  </button>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {tamanhos.map((t) => (
@@ -176,48 +283,36 @@ export default function ProductPage() {
               {!tamanhoSelecionado && (
                 <p className="text-xs text-[#8FAF8A] mt-2">Seleciona um tamanho para continuar</p>
               )}
+              {varianteSelecionada && (
+                <p className="text-xs text-[#3D6B4A] mt-2">Stock disponível: {varianteSelecionada.stock_variante}</p>
+              )}
             </div>
 
             {/* Quantidade + Botões */}
             <div className="flex gap-3 mb-6">
               <div className="flex items-center border border-[#C8DFC4] rounded-full overflow-hidden bg-white">
-                <button
-                  onClick={() => setQuantidade(Math.max(1, quantidade - 1))}
-                  className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light"
-                >
-                  −
-                </button>
+                <button onClick={() => setQuantidade(Math.max(1, quantidade - 1))} className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light">−</button>
                 <span className="w-8 text-center text-sm font-medium text-[#2C2C2C]">{quantidade}</span>
-                <button
-                  onClick={() => setQuantidade(quantidade + 1)}
-                  className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light"
-                >
-                  +
-                </button>
+                <button onClick={() => setQuantidade(quantidade + 1)} className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light">+</button>
               </div>
 
               <button
                 onClick={handleAdicionar}
                 className={`flex-1 py-3 rounded-full text-sm tracking-widest uppercase font-medium transition-all ${
-                  adicionado
-                    ? "bg-[#2C5038] text-white"
-                    : tamanhoSelecionado
-                    ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
-                    : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
+                  adicionado ? "bg-[#2C5038] text-white"
+                  : varianteSelecionada ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
+                  : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
                 }`}
               >
                 {adicionado ? "✓ Adicionado!" : "Adicionar ao Carrinho"}
               </button>
 
-              <button
-                onClick={() => setWishlist(!wishlist)}
-                className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-colors text-lg"
-              >
+              <button onClick={handleWishlist} className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-colors text-lg">
                 {wishlist ? "❤️" : "🤍"}
               </button>
             </div>
 
-            {/* Badges de Confiança */}
+            {/* Badges */}
             <div className="grid grid-cols-3 gap-3 mb-8 py-4 border-t border-b border-[#E8F0E6]">
               {[
                 { icon: "🚚", text: "Envio Grátis", sub: "Acima de 50€" },
@@ -233,13 +328,10 @@ export default function ProductPage() {
             </div>
 
             {/* Accordion */}
-            <div className="space-y-0 border-t border-[#E8F0E6]">
+            <div className="border-t border-[#E8F0E6]">
               {accordionItems.map((item, i) => (
                 <div key={i} className="border-b border-[#E8F0E6]">
-                  <button
-                    onClick={() => setAccordionAberto(accordionAberto === i ? null : i)}
-                    className="w-full flex items-center justify-between py-4 text-left"
-                  >
+                  <button onClick={() => setAccordionAberto(accordionAberto === i ? null : i)} className="w-full flex items-center justify-between py-4 text-left">
                     <span className="text-sm font-medium text-[#2C3A2C] tracking-wide">{item.title}</span>
                     <span className={`text-[#6B9E63] transition-transform duration-200 text-xs ${accordionAberto === i ? "rotate-180" : ""}`}>▼</span>
                   </button>
@@ -256,34 +348,102 @@ export default function ProductPage() {
       </div>
 
       {/* Produtos Relacionados */}
-      <section className="py-16 px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-end justify-between mb-8">
-            <div>
+      {produtosRelacionados.length > 0 && (
+        <section className="py-16 px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="mb-8">
               <p className="text-[11px] tracking-[0.15em] uppercase text-[#6B9E63] mb-2">Também podes gostar</p>
               <h2 style={serif} className="text-4xl font-semibold text-[#1A2E1A]">Produtos Relacionados</h2>
             </div>
-            <a href="#" className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5">Ver mais →</a>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {produtosRelacionados.map((prod) => (
+                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} onClick={() => window.scrollTo(0, 0)} className="block">
+                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
+                    <div className="bg-[#F0F5EE] h-52 flex items-center justify-center overflow-hidden">
+                      {prod.imagem_principal
+                        ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                        : <span className="text-4xl text-[#C8DFC4]">📷</span>
+                      }
+                    </div>
+                    <div className="p-4">
+                      <div className="text-sm font-medium text-[#2C3A2C] mb-1">{prod.nome_produto}</div>
+                      <div className="text-base font-semibold text-[#3D6B4A]">{parseFloat(prod.preco).toFixed(2).replace('.', ',')}€</div>
+                      <button className="w-full mt-3 bg-[#F0F5EE] text-[#3D6B4A] text-[10px] tracking-widest uppercase py-2 rounded-lg hover:bg-[#3D6B4A] hover:text-white transition-colors">
+                        Ver Produto
+                      </button>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {produtosRelacionados.map((prod) => (
-              <div key={prod.id} className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
-                <div className={`${prod.bg} h-52 flex items-center justify-center text-6xl relative`}>
-                  <span className={`absolute top-2.5 left-2.5 text-[9px] tracking-widest uppercase px-2.5 py-1 rounded-full font-medium ${tagStyles[prod.tag]}`}>{prod.tag}</span>
-                  <span className="group-hover:scale-110 transition-transform">{prod.emoji}</span>
+        </section>
+      )}
+
+      {/* Lightbox */}
+      {lightboxAberto && produto.imagens?.length > 0 && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+          onClick={() => setLightboxAberto(false)}
+        >
+          {/* Imagem principal */}
+          <div className="relative max-w-4xl max-h-[90vh] w-full mx-8" onClick={e => e.stopPropagation()}>
+            <img
+              src={produto.imagens[imagemAtiva]?.url}
+              alt={produto.nome_produto}
+              className="w-full h-full object-contain max-h-[80vh] rounded-xl"
+            />
+
+            {/* Fechar */}
+            <button
+              onClick={() => setLightboxAberto(false)}
+              className="absolute top-3 right-3 w-9 h-9 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
+            >
+              ✕
+            </button>
+
+            {/* Seta esquerda */}
+            {imagemAtiva > 0 && (
+              <button
+                onClick={() => setImagemAtiva(imagemAtiva - 1)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
+              >
+                ‹
+              </button>
+            )}
+
+            {/* Seta direita */}
+            {imagemAtiva < produto.imagens.length - 1 && (
+              <button
+                onClick={() => setImagemAtiva(imagemAtiva + 1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
+              >
+                ›
+              </button>
+            )}
+
+            {/* Miniaturas */}
+            <div className="flex gap-2 justify-center mt-4">
+              {produto.imagens.map((img, i) => (
+                <div
+                  key={i}
+                  onClick={() => setImagemAtiva(i)}
+                  className={`w-12 h-14 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                    imagemAtiva === i ? "border-white" : "border-white/30 hover:border-white/60"
+                  }`}
+                >
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
                 </div>
-                <div className="p-4">
-                  <div className="text-sm font-medium text-[#2C3A2C] mb-1">{prod.nome}</div>
-                  <div className="text-base font-semibold text-[#3D6B4A]">{prod.preco}€</div>
-                  <button className="w-full mt-3 bg-[#F0F5EE] text-[#3D6B4A] text-[10px] tracking-widest uppercase py-2 rounded-lg hover:bg-[#3D6B4A] hover:text-white transition-colors">
-                    Ver Produto
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Contador */}
+            <p className="text-center text-white/60 text-xs mt-3">
+              {imagemAtiva + 1} / {produto.imagens.length}
+            </p>
           </div>
         </div>
-      </section>
+      )}
 
       <Footer />
       {guiaAberto && <GuiaTamanhos onClose={() => setGuiaAberto(false)} />}
