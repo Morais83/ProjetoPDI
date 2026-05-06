@@ -22,6 +22,7 @@ export default function ConfirmacaoPage() {
     })
       .then(r => r.json())
       .then(dados => setEncomenda(dados))
+      .then(dados => { console.log(dados); setEncomenda(dados); })
       .catch(console.error);
   }, [id]);
 
@@ -53,7 +54,7 @@ export default function ConfirmacaoPage() {
             </div>
             <div className="border-t border-[#E8F0E6] pt-3 flex justify-between">
               <span className="text-sm font-medium text-[#2C3A2C]">Total pago</span>
-              <span style={serif} className="text-xl font-semibold text-[#1A2E1A]">{parseFloat(encomenda.total_pago).toFixed(2)}€</span>
+              <span style={serif} className="text-xl font-semibold text-[#1A2E1A]">{Number(encomenda.total_pago).toFixed(2).replace('.', ',')}€</span>
             </div>
           </div>
         )}

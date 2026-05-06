@@ -92,7 +92,8 @@ router.get('/me/encomendas', async (req, res) => {
     );
     for (const enc of encomendas) {
       const [linhas] = await db.query(`
-        SELECT le.*, p.nome_produto, v.tamanho, v.cor
+        SELECT le.*, p.nome_produto, p.id_produto, v.tamanho, v.cor,
+              (SELECT url FROM imagens_produto WHERE id_produto = p.id_produto AND ordem = 1) AS imagem_url
         FROM linhas_encomenda le
         LEFT JOIN variante v ON le.id_variante = v.id_variante
         LEFT JOIN produtos p ON v.id_produto = p.id_produto

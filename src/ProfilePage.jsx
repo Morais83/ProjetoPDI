@@ -453,7 +453,7 @@ export default function ProfilePage() {
                     >
                       <div>
                         <p className="text-sm font-medium text-[#2C3A2C]">Encomenda #{String(enc.id_encomenda).padStart(4, '0')}</p>
-                        <p className="text-xs text-[#8FAF8A]">{formatData(enc.data_pedido)} · {enc.linhas?.length} artigo(s)</p>
+                        <p className="text-xs text-[#8FAF8A]">{formatData(enc.data_pedido)} · {enc.linhas?.reduce((acc, l) => acc + l.quantidade, 0)} artigo(s)</p>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">

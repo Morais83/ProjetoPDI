@@ -2,8 +2,19 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer'); 
 const db = require('../db');
 require('dotenv').config();
+
+// NODEMAILER
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: process.env.EMAIL_PASS  
+  }
+});
 
 // REGISTO
 router.post('/registo', async (req, res) => {
@@ -75,7 +86,58 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// PERFIL (rota protegida)
+// RECUPERAR PASSWORD
+router.post('/esqueci-senha', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ erro: 'Por favor, introduz o teu email.' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT id_utilizador FROM utilizadores WHERE email = ?', [email]);
+    if (rows.length === 0) {
+      return res.json({ mensagem: 'Se o email existir, enviámos um link de recuperação.' });
+    }
+
+    const utilizadorId = rows[0].id_utilizador;
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    const resetTokenExpira = new Date(Date.now() + 3600000); 
+
+    await db.query(
+      'UPDATE utilizadores SET reset_token = ?, reset_token_expira = ? WHERE id_utilizador = ?',
+      [resetToken, resetTokenExpira, utilizadorId]
+    );
+
+    const resetUrl = `http://localhost:5173/recuperar-senha/${resetToken}`;
+
+    const mailOptions = {
+      from: `"Moda Chique" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Recuperação de Palavra-Passe - Moda Chique',
+      html: `
+        <h2>Recuperação de Palavra-Passe</h2>
+        <p>Recebemos um pedido para repor a palavra-passe da tua conta Moda Chique.</p>
+        <p>Clica no link abaixo para escolheres uma nova palavra-passe:</p>
+        <a href="${resetUrl}" style="padding: 10px 20px; background-color: #3D6B4A; color: white; text-decoration: none; border-radius: 5px;">Repor Palavra-Passe</a>
+        <p>Ou copia e cola este link no teu browser: <br> ${resetUrl}</p>
+        <p><em>Este link expira em 1 hora. Se não pediste esta alteração, podes ignorar este email.</em></p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ mensagem: 'Link de recuperação enviado para o teu email.' });
+
+  } catch (err) {
+    console.error('Erro na recuperação de senha:', err);
+    res.status(500).json({ erro: 'Ocorreu um erro. Tenta novamente mais tarde.' });
+  }
+});
+
+// PERFIL 
 router.get('/perfil', require('../middleware/auth'), async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -86,6 +148,41 @@ router.get('/perfil', require('../middleware/auth'), async (req, res) => {
     res.json(rows[0]);
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao obter perfil' });
+  }
+});
+
+// GUARDAR PASSWORD
+router.post('/repor-senha', async (req, res) => {
+  const { token, novaPassword } = req.body;
+
+  if (!token || !novaPassword) {
+    return res.status(400).json({ erro: 'Dados inválidos.' });
+  }
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id_utilizador FROM utilizadores WHERE reset_token = ? AND reset_token_expira > NOW()',
+      [token]
+    );
+
+    if (rows.length === 0) {
+      return res.status(400).json({ erro: 'O link de recuperação é inválido ou já expirou.' });
+    }
+
+    const utilizadorId = rows[0].id_utilizador;
+
+    const passwordHash = await bcrypt.hash(novaPassword, 10);
+
+    await db.query(
+      'UPDATE utilizadores SET password = ?, reset_token = NULL, reset_token_expira = NULL WHERE id_utilizador = ?',
+      [passwordHash, utilizadorId]
+    );
+
+    res.json({ mensagem: 'Palavra-passe alterada com sucesso! Já podes fazer login.' });
+
+  } catch (err) {
+    console.error('Erro ao repor senha:', err);
+    res.status(500).json({ erro: 'Ocorreu um erro ao alterar a palavra-passe.' });
   }
 });
 
