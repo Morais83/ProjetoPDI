@@ -116,3 +116,32 @@ export const criarEncomenda = async (dados) => {
   });
   return res.json();
 };
+
+// ————— RECUPERAR PASSWORD —————
+export const pedirRecuperacao = async (email) => {
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/esqueci-senha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        return await response.json();
+    } catch (error) {
+        console.error("Erro no fetch:", error);
+        return { erro: 'Erro de ligação ao servidor' };
+    }
+};
+
+// ————— REPOR PASSWORD —————
+export const reporSenha = async (token, novaPassword) => {
+    try {
+        const response = await fetch(`http://localhost:5000/api/auth/repor-senha`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, novaPassword })
+        });
+        return await response.json();
+    } catch (error) {
+        return { erro: 'Erro de ligação ao servidor' };
+    }
+};

@@ -12,6 +12,9 @@ const sans = { fontFamily: "'Jost', sans-serif" };
 export default function ProductPage() {
   const { id } = useParams();
   const [produto, setProduto] = useState(null);
+
+  if (!id) return null;
+  
   const [produtosRelacionados, setProdutosRelacionados] = useState([]);
   const [imagemAtiva, setImagemAtiva] = useState(0);
   const [varianteSelecionada, setVarianteSelecionada] = useState(null);

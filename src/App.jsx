@@ -18,6 +18,7 @@ import ConfirmacaoPage from "./confirmacaopage";
 import CartPage from "./cartpage";
 import BrandsPage from "./brandspage";
 import PromoPage from "./promopage";
+import ResetPasswordPage from './resetpasswordpage';
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/carrinho" element={<CartPage />} />
         <Route path="/marcas" element={<BrandsPage />} />
         <Route path="/promocoes" element={<PromoPage />} />
+        <Route path="/recuperar-senha/:token" element={<ResetPasswordPage />} />
         
       </Routes>
     </Router>
