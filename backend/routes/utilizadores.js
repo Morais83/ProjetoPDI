@@ -193,4 +193,40 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// GET medidas do utilizador
+router.get('/me/medidas', async (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ erro: 'Não autenticado' });
+  try {
+    const [rows] = await db.query('SELECT * FROM medidas WHERE id_utilizador = ?', [user.id]);
+    res.json(rows[0] || null);
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao obter medidas' });
+  }
+});
+
+// POST/PUT guardar medidas
+router.post('/me/medidas', async (req, res) => {
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ erro: 'Não autenticado' });
+  try {
+    const { busto, cintura, anca, altura } = req.body;
+    const [existe] = await db.query('SELECT id_medida FROM medidas WHERE id_utilizador = ?', [user.id]);
+    if (existe.length > 0) {
+      await db.query(
+        'UPDATE medidas SET busto=?, cintura=?, anca=?, altura=? WHERE id_utilizador=?',
+        [busto || null, cintura || null, anca || null, altura || null, user.id]
+      );
+    } else {
+      await db.query(
+        'INSERT INTO medidas (id_utilizador, busto, cintura, anca, altura) VALUES (?,?,?,?,?)',
+        [user.id, busto || null, cintura || null, anca || null, altura || null]
+      );
+    }
+    res.json({ mensagem: 'Medidas guardadas!' });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao guardar medidas' });
+  }
+});
+
 module.exports = router;

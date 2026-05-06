@@ -91,6 +91,81 @@ function FavoritosSecao({ serif }) {
   );
 }
 
+function MedidasSecao({ serif, token }) {
+  const [medidas, setMedidas] = useState({ busto: "", cintura: "", anca: "", altura: "" });
+  const [guardado, setGuardado] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/utilizadores/me/medidas', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(dados => {
+        if (dados) {
+          setMedidas({
+            busto: dados.busto || "",
+            cintura: dados.cintura || "",
+            anca: dados.anca || "",
+            altura: dados.altura || "",
+          });
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const guardar = async () => {
+    try {
+      await fetch('http://localhost:5000/api/utilizadores/me/medidas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(medidas),
+      });
+      setGuardado(true);
+      setTimeout(() => setGuardado(false), 2000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (loading) return (
+    <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
+      <p className="text-sm text-[#8FAF8A]">A carregar...</p>
+    </div>
+  );
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
+      <h2 style={serif} className="text-2xl font-semibold text-[#1A2E1A] mb-2">Minhas Medidas</h2>
+      <p className="text-sm text-[#8FAF8A] mb-6">Guarda as tuas medidas para uma experiência de compra mais fácil. Todas as medidas em centímetros (cm).</p>
+      <div className="grid grid-cols-2 gap-5">
+        {[
+          { label: "Busto (cm)", key: "busto", placeholder: "ex: 86" },
+          { label: "Cintura (cm)", key: "cintura", placeholder: "ex: 68" },
+          { label: "Anca (cm)", key: "anca", placeholder: "ex: 94" },
+          { label: "Altura (cm)", key: "altura", placeholder: "ex: 165" },
+        ].map(field => (
+          <div key={field.key}>
+            <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1 font-medium">{field.label}</label>
+            <input
+              type="number"
+              value={medidas[field.key]}
+              onChange={e => setMedidas({ ...medidas, [field.key]: e.target.value })}
+              placeholder={field.placeholder}
+              className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+        ))}
+      </div>
+      <button onClick={guardar}
+        className={`mt-6 px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all ${guardado ? "bg-[#2C5038] text-white" : "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"}`}>
+        {guardado ? "✓ Guardado!" : "Guardar Medidas"}
+      </button>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const [secaoAtiva, setSecaoAtiva] = useState("perfil");
   const [perfil, setPerfil] = useState({ nome: "", email: "", telefone: "", prefixo_tel: "+351" });
@@ -409,32 +484,7 @@ export default function ProfilePage() {
 
           {/* Medidas */}
           {secaoAtiva === "medidas" && (
-            <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
-              <h2 style={serif} className="text-2xl font-semibold text-[#1A2E1A] mb-2">Minhas Medidas</h2>
-              <p className="text-sm text-[#8FAF8A] mb-6">Guarda as tuas medidas para uma experiência de compra mais fácil.</p>
-              <div className="grid grid-cols-2 gap-5">
-                {[
-                  { label: "Busto (cm)", key: "busto" },
-                  { label: "Cintura (cm)", key: "cintura" },
-                  { label: "Anca (cm)", key: "anca" },
-                  { label: "Altura (cm)", key: "altura" },
-                  { label: "Tamanho EU", key: "tamEU" },
-                  { label: "Tamanho Internacional", key: "tamInt" },
-                ].map(field => (
-                  <div key={field.key}>
-                    <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1 font-medium">{field.label}</label>
-                    <input type="text" value={medidas[field.key]}
-                      onChange={e => setMedidas({ ...medidas, [field.key]: e.target.value })}
-                      placeholder="—"
-                      className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300" />
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => { setGuardado(true); setTimeout(() => setGuardado(false), 2000); }}
-                className={`mt-6 px-8 py-3 rounded-full text-xs tracking-widest uppercase transition-all ${guardado ? "bg-[#2C5038] text-white" : "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"}`}>
-                {guardado ? "✓ Guardado!" : "Guardar Medidas"}
-              </button>
-            </div>
+            <MedidasSecao serif={serif} token={token} />
           )}
 
           {/* Pedidos */}
