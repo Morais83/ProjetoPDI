@@ -1,42 +1,46 @@
-  import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 
 const categorias = [
-  { id: 1, nome: "Calçado", emoji: "👠", total: "86 artigos", bg: "bg-[#E8F0E6]" },
-  { id: 2, nome: "Casacos", emoji: "🧥", total: "54 artigos", bg: "bg-[#EEF5EC]" },
-  { id: 3, nome: "Malas", emoji: "👜", total: "48 artigos", bg: "bg-[#E4EEE2]" },
-  { id: 4, nome: "Vestidos", emoji: "👗", total: "72 artigos", bg: "bg-[#ECF3EA]" },
+  { id: 1, nome: "Vestidos",        emoji: "👗", bg: "bg-[#E8F0E6]" },
+  { id: 2, nome: "Casacos",         emoji: "🧥", bg: "bg-[#EEF5EC]" },
+  { id: 3, nome: "Blazers e coletes", emoji: "🥼", bg: "bg-[#E4EEE2]" },
+  { id: 4, nome: "Saias",           emoji: "👗", bg: "bg-[#ECF3EA]" },
 ];
-
-const produtos = [
-  { id: 1, nome: "Vestido Linho Verde", preco: "59,90", emoji: "👗", bg: "bg-[#F0F5EE]" },
-  { id: 2, nome: "Mules Bege Nude", preco: "49,90", emoji: "👠", bg: "bg-[#F5F0EE]" },
-  { id: 3, nome: "Mala Tote Creme", preco: "39,90", emoji: "👜", bg: "bg-[#F0F5EE]" },
-  { id: 4, nome: "Blazer Alfaiataria", preco: "89,90", emoji: "🧥", bg: "bg-[#F5F0EE]" },
-  { id: 5, nome: "Colar Dourado Fino", preco: "24,90", emoji: "💍", bg: "bg-[#F0F5EE]" },
-];
-
-const tagStyles = {
-  Novo: "bg-[#E8F0E6] text-[#3D6B4A]",
-  Bestseller: "bg-[#FEF9E7] text-[#A67C00]",
-  Sale: "bg-[#FDECEA] text-[#C0392B]",
-};
 
 export default function HomePage() {
   const [wishlist, setWishlist] = useState([]);
   const [email, setEmail] = useState("");
   const [enviado, setEnviado] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  
+  const [produtosRecentes, setProdutosRecentes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
+    
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
+
+    const fetchProdutos = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/produtos');
+        const data = await res.json();
+        setProdutosRecentes(data.slice(0, 5));
+      } catch (err) {
+        console.error("Erro ao buscar as novidades:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProdutos();
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -99,17 +103,20 @@ export default function HomePage() {
               <p className="text-[11px] tracking-[0.15em] uppercase text-[#6B9E63] mb-2">Navega por</p>
               <h2 style={serif} className="text-4xl font-semibold text-[#1A2E1A]">Categorias Populares</h2>
             </div>
-            <a href="#" className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5">Ver todas →</a>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {categorias.map((cat) => (
-              <div key={cat.id} className="rounded-2xl overflow-hidden border border-[#E8F0E6] hover:-translate-y-1 transition-transform cursor-pointer group">
+              <Link
+                key={cat.id}
+                to={`/catalogo?categoria=${encodeURIComponent(cat.nome)}`}
+                onClick={() => window.scrollTo(0, 0)}
+                className="rounded-2xl overflow-hidden border border-[#E8F0E6] hover:-translate-y-1 transition-transform cursor-pointer group block"
+              >
                 <div className={`${cat.bg} h-48 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform`}>{cat.emoji}</div>
                 <div className="p-4 bg-white border-t border-[#E8F0E6]">
                   <div className="text-sm font-medium text-[#2C3A2C]">{cat.nome}</div>
-                  <div className="text-xs text-[#8FAF8A] mt-1">{cat.total}</div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -140,34 +147,41 @@ export default function HomePage() {
               <h2 style={serif} className="text-4xl font-semibold text-[#1A2E1A]">Novidades</h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {produtos.map((prod) => (
-              <Link to={`/produto/${prod.id}`} key={prod.id} className="block" onClick={() => window.scrollTo(0, 0)}>
-                <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
-                  <div className={`${prod.bg} h-44 flex items-center justify-center text-5xl relative`}>
-                    <span className={`absolute top-2.5 left-2.5 text-[9px] tracking-widest uppercase px-2.5 py-1 rounded-full font-medium ${tagStyles[prod.tag]}`}>{prod.tag}</span>
-                    <span className="group-hover:scale-110 transition-transform">{prod.emoji}</span>
-                  </div>
-                  <div className="p-3.5">
-                    <div className="text-xs font-medium text-[#2C3A2C] mb-1.5">{prod.nome}</div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-semibold text-[#3D6B4A]">{prod.preco}€</span>
-                      {prod.precoAnt && <span className="text-xs text-gray-400 line-through">{prod.precoAnt}€</span>}
+          
+          {loading ? (
+            <p className="text-sm text-[#8FAF8A]">A carregar novidades...</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {produtosRecentes.map((prod) => (
+                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} className="block" onClick={() => window.scrollTo(0, 0)}>
+                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer h-full flex flex-col">
+                    
+                    {/* Imagem do Produto */}
+                    <div className="bg-[#F0F5EE] h-64 flex items-center justify-center relative overflow-hidden shrink-0">
+                      {prod.imagem_principal ? (
+                        <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                      ) : (
+                        <span className="text-5xl text-[#C8DFC4]">📷</span>
+                      )}
                     </div>
-                    <button 
-                      onClick={(e) => e.preventDefault()}
-                      className="w-full mt-2.5 bg-[#F0F5EE] text-[#3D6B4A] text-[10px] tracking-widest uppercase py-2 rounded-lg hover:bg-[#3D6B4A] hover:text-white transition-colors"
-                    >
-                      Adicionar
-                    </button>
+
+                    {/* Detalhes do Produto */}
+                    <div className="p-3.5 flex flex-col flex-grow">
+                      <div className="text-xs font-medium text-[#2C3A2C] mb-1.5 line-clamp-2 min-h-[32px]">
+                        {prod.nome_produto}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-auto">
+                        <span className="text-sm font-semibold text-[#3D6B4A]">{parseFloat(prod.preco).toFixed(2).replace('.', ',')}€</span>
+                        {prod.preco_anterior && <span className="text-xs text-gray-400 line-through">{parseFloat(prod.preco_anterior).toFixed(2).replace('.', ',')}€</span>}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
-
 
       {/* Footer */}
       <Footer />

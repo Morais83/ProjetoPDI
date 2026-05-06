@@ -6,6 +6,7 @@ export default function AdminLayout({ children }) {
 
   const links = [
     { label: "Categorias", path: "/admin/categorias" },
+    { label: "Marcas", path: "/admin/marcas" },
     { label: "Produtos", path: "/admin/produtos" },
     { label: "Encomendas", path: "/admin/encomendas" },
     { label: "Utilizadores", path: "/admin/utilizadores" },
@@ -40,7 +41,14 @@ export default function AdminLayout({ children }) {
           <Link to="/" className="px-4 py-2.5 rounded-lg text-sm text-white hover:bg-[#2C5038] transition-all">
             Ver Site
           </Link>
-          <button className="px-4 py-2.5 rounded-lg text-sm text-white hover:bg-[#2C5038] transition-all text-left">
+          <button
+            onClick={() => {
+              localStorage.removeItem('token');
+              localStorage.removeItem('utilizador');
+              window.location.href = '/login';
+            }}
+            className="px-4 py-2.5 rounded-lg text-sm text-white hover:bg-[#2C5038] transition-all text-left"
+          >
             Sair
           </button>
         </div>
