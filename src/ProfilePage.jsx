@@ -40,7 +40,7 @@ function FavoritosSecao({ serif }) {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(dados => { setFavoritos(dados); setLoading(false); })
+      .then(dados => { setFavoritos(Array.isArray(dados) ? dados : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -217,7 +217,7 @@ export default function ProfilePage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dados = await res.json();
-      setMoradas(dados);
+      setMoradas(Array.isArray(dados) ? dados : []);
     } catch (err) {
       console.error(err);
     }
@@ -229,7 +229,7 @@ export default function ProfilePage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dados = await res.json();
-      setEncomendas(dados);
+      setEncomendas(Array.isArray(dados) ? dados : []);
     } catch (err) {
       console.error(err);
     }

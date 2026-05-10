@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     const [rows] = await db.query(`
       SELECT f.id_favorito, f.id_produto, f.id_variante, f.data_adicao,
              p.nome_produto, p.preco, p.preco_anterior,
-             (SELECT url FROM imagens_produto WHERE id_produto = p.id_produto AND ordem = 1) AS imagem_url
+             (SELECT url FROM imagens_produto WHERE id_produto = p.id_produto ORDER BY ordem LIMIT 1) AS imagem_url
       FROM favoritos f
       JOIN produtos p ON f.id_produto = p.id_produto
       WHERE f.id_utilizador = ?
