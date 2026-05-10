@@ -11,7 +11,14 @@ router.get('/', async (req, res) => {
              m.nome_marca,
              (SELECT url FROM imagens_produto
               WHERE id_produto = p.id_produto
-              ORDER BY ordem LIMIT 1) AS imagem_principal
+              ORDER BY ordem LIMIT 1) AS imagem_principal,
+             (SELECT GROUP_CONCAT(DISTINCT v.cor ORDER BY v.cor SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto
+                AND v.cor IS NOT NULL AND v.cor != '') AS cores_disponiveis,
+             (SELECT GROUP_CONCAT(DISTINCT v.tamanho ORDER BY v.tamanho SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto) AS tamanhos_disponiveis
       FROM produtos p
       LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
       LEFT JOIN marcas m ON p.id_marca = m.id_marca
@@ -35,7 +42,14 @@ router.get('/pesquisa', async (req, res) => {
              m.nome_marca,
              (SELECT url FROM imagens_produto
               WHERE id_produto = p.id_produto
-              ORDER BY ordem LIMIT 1) AS imagem_principal
+              ORDER BY ordem LIMIT 1) AS imagem_principal,
+             (SELECT GROUP_CONCAT(DISTINCT v.cor ORDER BY v.cor SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto
+                AND v.cor IS NOT NULL AND v.cor != '') AS cores_disponiveis,
+             (SELECT GROUP_CONCAT(DISTINCT v.tamanho ORDER BY v.tamanho SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto) AS tamanhos_disponiveis
       FROM produtos p
       LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
       LEFT JOIN marcas m ON p.id_marca = m.id_marca
