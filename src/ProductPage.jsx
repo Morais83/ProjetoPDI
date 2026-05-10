@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "./footer";
 import Navbar from "./navbar";
@@ -7,28 +7,31 @@ import { verificarFavorito, adicionarFavorito, removerFavorito } from './api';
 import { adicionarAoCarrinho } from './cart';
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
-const sans = { fontFamily: "'Jost', sans-serif" };
+const sans  = { fontFamily: "'Jost', sans-serif" };
+
+const ORDEM_TAMANHOS = ["XS","S","M","L","XL","XXL","35","36","37","38","39","40","41","42","43","44"];
 
 export default function ProductPage() {
   const { id } = useParams();
-  const [produto, setProduto] = useState(null);
+  const [produto, setProduto]                     = useState(null);
+  const [produtosRelacionados, setProdutosRelacionados] = useState([]);
+  const [imagemAtiva, setImagemAtiva]             = useState(0);
+  const [imageFade, setImageFade]                 = useState(true);
+  const [varianteSelecionada, setVarianteSelecionada] = useState(null);
+  const [tamanhoSelecionado, setTamanhoSelecionado]   = useState(null);
+  const [corSelecionada, setCorSelecionada]           = useState(null);
+  const [quantidade, setQuantidade]               = useState(1);
+  const [wishlist, setWishlist]                   = useState(false);
+  const [accordionAberto, setAccordionAberto]     = useState(null);
+  const [adicionado, setAdicionado]               = useState(false);
+  const [guiaAberto, setGuiaAberto]               = useState(false);
+  const [loading, setLoading]                     = useState(true);
+  const [lightboxAberto, setLightboxAberto]       = useState(false);
+
+  const utilizador = JSON.parse(localStorage.getItem('utilizador'));
 
   if (!id) return null;
-  
-  const [produtosRelacionados, setProdutosRelacionados] = useState([]);
-  const [imagemAtiva, setImagemAtiva] = useState(0);
-  const [varianteSelecionada, setVarianteSelecionada] = useState(null);
-  const [tamanhoSelecionado, setTamanhoSelecionado] = useState(null);
-  const [corSelecionada, setCorSelecionada] = useState(null);
-  const [quantidade, setQuantidade] = useState(1);
-  const [wishlist, setWishlist] = useState(false);
-  const utilizador = JSON.parse(localStorage.getItem('utilizador'));
-  const [accordionAberto, setAccordionAberto] = useState(null);
-  const [adicionado, setAdicionado] = useState(false);
-  const [guiaAberto, setGuiaAberto] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [lightboxAberto, setLightboxAberto] = useState(false);
-  
+
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
@@ -36,13 +39,11 @@ export default function ProductPage() {
     document.head.appendChild(link);
   }, []);
 
-  useEffect(() => {
-    carregarProduto();
-  }, [id]);
+  useEffect(() => { carregarProduto(); }, [id]);
 
   useEffect(() => {
     if (!produto || !utilizador) return;
-    verificarFavorito(produto.id_produto).then(dados => setWishlist(dados.favorito));
+    verificarFavorito(produto.id_produto).then(d => setWishlist(d.favorito));
   }, [produto]);
 
   const carregarProduto = async () => {
@@ -52,130 +53,166 @@ export default function ProductPage() {
     setVarianteSelecionada(null);
     setImagemAtiva(0);
     try {
-      const res = await fetch(`http://localhost:5000/api/produtos/${id}`);
-      const dados = await res.json();
+      const res    = await fetch(`http://localhost:5000/api/produtos/${id}`);
+      const dados  = await res.json();
       setProduto(dados);
 
       const resRel = await fetch(`http://localhost:5000/api/produtos`);
-      const todos = await resRel.json();
-      const relacionados = todos
-        .filter(p => p.id_categoria === dados.id_categoria && p.id_produto !== dados.id_produto)
-        .slice(0, 4);
-      setProdutosRelacionados(relacionados);
-    } catch (err) {
-      console.error(err);
-    }
+      const todos  = await resRel.json();
+      setProdutosRelacionados(
+        todos.filter(p => p.id_categoria === dados.id_categoria && p.id_produto !== dados.id_produto).slice(0, 4)
+      );
+    } catch (err) { console.error(err); }
     setLoading(false);
   };
 
-  const ordemTamanhos = ["XS", "S", "M", "L", "XL", "XXL", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44"];
-  const tamanhos = produto
-    ? [...new Set(produto.variantes?.map(v => v.tamanho))].sort((a, b) => ordemTamanhos.indexOf(a) - ordemTamanhos.indexOf(b))
-    : [];
-  const cores = produto ? [...new Set(produto.variantes?.map(v => v.cor))] : [];
+  // ── Derivados ────────────────────────────────────────────────────────────────
 
+  // Todas as cores únicas do produto
+  const cores = useMemo(() =>
+    produto ? [...new Set(produto.variantes?.map(v => v.cor).filter(Boolean))] : []
+  , [produto]);
+
+  // Todos os tamanhos únicos (para mostrar sempre todos)
+  const tamanhos = useMemo(() =>
+    produto
+      ? [...new Set(produto.variantes?.map(v => v.tamanho))]
+          .sort((a, b) => ORDEM_TAMANHOS.indexOf(a) - ORDEM_TAMANHOS.indexOf(b))
+      : []
+  , [produto]);
+
+  // Imagens filtradas pela cor selecionada
+  const imagensDaCor = useMemo(() => {
+    if (!produto?.imagens) return [];
+    if (!corSelecionada) return produto.imagens;
+    const especificas = produto.imagens.filter(img => img.cor === corSelecionada);
+    return especificas.length > 0 ? especificas : produto.imagens.filter(img => !img.cor);
+  }, [produto, corSelecionada]);
+
+  // Stock disponível por tamanho para a cor selecionada
+  const stockPorTamanho = useMemo(() => {
+    if (!produto || !corSelecionada) return {};
+    return (produto.variantes || [])
+      .filter(v => v.cor === corSelecionada)
+      .reduce((acc, v) => ({ ...acc, [v.tamanho]: v.stock_variante }), {});
+  }, [produto, corSelecionada]);
+
+  // Um tamanho está desativado se a cor estiver selecionada e não tiver stock
+  const tamanhoDesativado = (t) =>
+    !!corSelecionada && (stockPorTamanho[t] === undefined || Number(stockPorTamanho[t]) === 0);
+
+  // ── Efeitos de interação ────────────────────────────────────────────────────
+
+  // Quando muda cor → atualiza imagens com fade, revalida tamanho selecionado
   useEffect(() => {
-    if (!produto || !tamanhoSelecionado || !corSelecionada) return;
-    const variante = produto.variantes?.find(v => v.tamanho === tamanhoSelecionado && v.cor === corSelecionada);
-    setVarianteSelecionada(variante || null);
+    triggerFade();
+    setImagemAtiva(0);
+    // Se o tamanho selecionado não tem stock nesta cor, remove a seleção
+    if (tamanhoSelecionado && corSelecionada) {
+      const stock = (produto?.variantes || []).find(
+        v => v.cor === corSelecionada && v.tamanho === tamanhoSelecionado
+      )?.stock_variante;
+      if (!stock || Number(stock) === 0) setTamanhoSelecionado(null);
+    }
+  }, [corSelecionada]);
+
+  // Quando muda imagem activa → fade suave
+  useEffect(() => { triggerFade(); }, [imagemAtiva]);
+
+  // Atualiza variante selecionada quando cor+tamanho mudam
+  useEffect(() => {
+    if (!produto || !tamanhoSelecionado || !corSelecionada) {
+      setVarianteSelecionada(null);
+      return;
+    }
+    const v = produto.variantes?.find(
+      v => v.tamanho === tamanhoSelecionado && v.cor === corSelecionada
+    );
+    setVarianteSelecionada(v || null);
   }, [tamanhoSelecionado, corSelecionada, produto]);
+
+  const triggerFade = () => {
+    setImageFade(false);
+    setTimeout(() => setImageFade(true), 50);
+  };
+
+  // ── Ações ────────────────────────────────────────────────────────────────────
 
   const handleAdicionar = () => {
     if (!varianteSelecionada) return;
-
     adicionarAoCarrinho({
-      id_variante: varianteSelecionada.id_variante,
-      id_produto: produto.id_produto,
+      id_variante:  varianteSelecionada.id_variante,
+      id_produto:   produto.id_produto,
       nome_produto: produto.nome_produto,
-      nome_marca: produto.nome_marca,
-      preco: parseFloat(produto.preco),
-      cor: varianteSelecionada.cor,
-      tamanho: varianteSelecionada.tamanho,
-      quantidade: quantidade,
-      imagem_url: produto.imagens?.[0]?.url || null,
+      nome_marca:   produto.nome_marca,
+      preco:        parseFloat(produto.preco),
+      cor:          varianteSelecionada.cor,
+      tamanho:      varianteSelecionada.tamanho,
+      quantidade,
+      imagem_url:   imagensDaCor[0]?.url || produto.imagens?.[0]?.url || null,
     });
-
     setAdicionado(true);
     setTimeout(() => setAdicionado(false), 2000);
-
     window.dispatchEvent(new Event('carrinho-atualizado'));
   };
-  
+
   const handleWishlist = async () => {
-    if (!utilizador) {
-      window.location.href = '/login';
-      return;
-    }
-    if (wishlist) {
-      await removerFavorito(produto.id_produto);
-      setWishlist(false);
-    } else {
-      await adicionarFavorito(produto.id_produto);
-      setWishlist(true);
-    }
+    if (!utilizador) { window.location.href = '/login'; return; }
+    if (wishlist) { await removerFavorito(produto.id_produto); setWishlist(false); }
+    else          { await adicionarFavorito(produto.id_produto); setWishlist(true); }
   };
 
   const getDepartamentoInfo = (categoria) => {
     if (!categoria) return null;
-    
-    const listasDepartamentos = {
-      roupa: ["Blusas", "Vestidos", "Sobretudos", "Calças e Calções", "Saias", "T-shirt e Tops", "Roupa de banho", "Casacos", "Sweatshirts e Hoodies", "Malhas", "Blazers e coletes", "Roupa Interior", "Macacões"],
-      calcado: ["Sapatilhas", "Sandálias", "Botas", "Botins", "Saltos altos", "Sapatos rasos", "Chinelos"],
-      acessorios: ["Malas de mão", "Carteiras", "Mochilas", "Cintos", "Chapéus", "Lenços", "Óculos de sol", "Joalharia", "Bijuteria"]
-    };
-
-    if (listasDepartamentos.calcado.includes(categoria)) return { id: "calcado", label: "Calçado" };
-    if (listasDepartamentos.acessorios.includes(categoria)) return { id: "acessorios", label: "Acessórios" };
-    
+    const calcado    = ["Sapatilhas","Sandálias","Botas","Botins","Saltos altos","Sapatos rasos","Chinelos"];
+    const acessorios = ["Malas de mão","Carteiras","Mochilas","Cintos","Chapéus","Lenços","Óculos de sol","Joalharia","Bijuteria"];
+    if (calcado.includes(categoria))    return { id: "calcado",    label: "Calçado" };
+    if (acessorios.includes(categoria)) return { id: "acessorios", label: "Acessórios" };
     return { id: "roupa", label: "Roupa" };
   };
+
+  // ── Estados de carregamento ──────────────────────────────────────────────────
 
   if (loading) return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] flex items-center justify-center">
       <p className="text-sm text-[#8FAF8A]">A carregar produto...</p>
     </div>
   );
-
   if (!produto) return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] flex items-center justify-center">
       <p className="text-sm text-[#8FAF8A]">Produto não encontrado.</p>
     </div>
   );
 
+  const departamento   = getDepartamentoInfo(produto.nome_categoria);
   const accordionItems = [
-    { title: "Descrição", content: produto.descricao || "—" },
-    { title: "Materiais", content: produto.materiais || "—" },
-    { title: "Guia de Cuidados", content: produto.guia_cuidados || "—" },
+    { title: "Descrição",               content: produto.descricao    || "—" },
+    { title: "Materiais",               content: produto.materiais    || "—" },
+    { title: "Guia de Cuidados",        content: produto.guia_cuidados || "—" },
     { title: "Informações do Fabricante", content: "Moda Chique — Lili Store. Comprometidos com a produção responsável e sustentável." },
   ];
 
-  const departamento = getDepartamentoInfo(produto.nome_categoria);
+  // Cor selecionada com hex para o swatch
+  const corInfo = produto.variantes?.find(v => v.cor === corSelecionada);
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
       <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
         ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
       </div>
-
       <Navbar />
 
+      {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center gap-2 text-xs text-[#8FAF8A]">
           <Link to="/" className="hover:text-[#3D6B4A] transition-colors">Início</Link>
           <span>/</span>
-          
           {departamento && (
             <>
-              <Link 
-                to={`/catalogo?departamento=${departamento.id}`} 
-                className="hover:text-[#3D6B4A] transition-colors"
-              >
-                {departamento.label}
-              </Link>
+              <Link to={`/catalogo?departamento=${departamento.id}`} className="hover:text-[#3D6B4A] transition-colors">{departamento.label}</Link>
               <span>/</span>
             </>
           )}
-          
           <span className="text-[#3D6B4A]">{produto.nome_produto}</span>
         </div>
       </div>
@@ -184,12 +221,13 @@ export default function ProductPage() {
       <div className="max-w-7xl mx-auto px-8 pb-16">
         <div className="grid md:grid-cols-2 gap-12 items-start">
 
-          {/* Galeria */}
+          {/* ── Galeria ── */}
           <div className="flex gap-4">
+            {/* Miniaturas */}
             <div className="flex flex-col gap-3">
-              {produto.imagens?.length > 0 ? produto.imagens.map((img, i) => (
+              {imagensDaCor.length > 0 ? imagensDaCor.map((img, i) => (
                 <div
-                  key={i}
+                  key={`${corSelecionada}-${i}`}
                   onClick={() => setImagemAtiva(i)}
                   className={`w-16 h-20 rounded-xl cursor-pointer border-2 transition-all overflow-hidden bg-white ${
                     imagemAtiva === i ? "border-[#3D6B4A]" : "border-[#E8F0E6] hover:border-[#C8DFC4]"
@@ -202,14 +240,24 @@ export default function ProductPage() {
               )}
             </div>
 
+            {/* Imagem principal */}
             <div className="flex-1">
               <div
-                onClick={() => produto.imagens?.length > 0 && setLightboxAberto(true)}
+                onClick={() => imagensDaCor.length > 0 && setLightboxAberto(true)}
                 className="w-full aspect-[3/4] bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden flex items-center justify-center cursor-zoom-in relative group"
               >
-                {produto.imagens?.length > 0 ? (
+                {imagensDaCor.length > 0 ? (
                   <>
-                    <img src={produto.imagens[imagemAtiva]?.url} alt={produto.nome_produto} className="w-full h-full object-cover" />
+                    <img
+                      key={`${corSelecionada}-${imagemAtiva}`}
+                      src={imagensDaCor[imagemAtiva]?.url}
+                      alt={produto.nome_produto}
+                      className="w-full h-full object-cover"
+                      style={{
+                        opacity: imageFade ? 1 : 0,
+                        transition: 'opacity 0.3s ease',
+                      }}
+                    />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all flex items-center justify-center">
                       <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-full px-3 py-1.5 text-xs text-[#3D6B4A] font-medium">🔍 Ver em detalhe</span>
                     </div>
@@ -221,73 +269,100 @@ export default function ProductPage() {
             </div>
           </div>
 
-          {/* Informações */}
+          {/* ── Informações ── */}
           <div className="pt-2">
             <div className="mb-6">
               <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-1">{produto.nome_marca || 'Moda Chique'}</p>
               <h1 style={serif} className="text-4xl font-semibold text-[#1A2E1A] mb-3">{produto.nome_produto}</h1>
               <div className="flex items-center gap-3">
-                <span style={serif} className="text-3xl font-semibold text-[#3D6B4A]">{parseFloat(produto.preco).toFixed(2).replace('.', ',')}€</span>
+                <span style={serif} className="text-3xl font-semibold text-[#3D6B4A]">
+                  {parseFloat(produto.preco).toFixed(2).replace('.', ',')}€
+                </span>
                 {produto.preco_anterior && (
-                  <span className="text-lg text-gray-400 line-through">{parseFloat(produto.preco_anterior).toFixed(2).replace('.', ',')}€</span>
+                  <span className="text-lg text-gray-400 line-through">
+                    {parseFloat(produto.preco_anterior).toFixed(2).replace('.', ',')}€
+                  </span>
                 )}
               </div>
             </div>
 
-            {/* Cor */}
-              {cores.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-xs tracking-widest uppercase text-[#6B9E63] mb-3 font-medium">
-                    Cor: <span className="text-[#2C2C2C] normal-case tracking-normal font-normal">{corSelecionada || "Seleciona uma cor"}</span>
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {cores.map((cor, i) => (
+            {/* Seleção de Cor */}
+            {cores.length > 0 && (
+              <div className="mb-6">
+                <p className="text-xs tracking-widest uppercase text-[#6B9E63] mb-3 font-medium">
+                  Cor:{" "}
+                  <span className="text-[#2C2C2C] normal-case tracking-normal font-normal">
+                    {corSelecionada || "Seleciona uma cor"}
+                  </span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {cores.map((cor, i) => {
+                    const hex = produto.variantes?.find(v => v.cor === cor)?.hex_cor;
+                    return (
                       <button
                         key={i}
                         onClick={() => setCorSelecionada(cor)}
-                        className={`px-4 py-1.5 rounded-full border text-xs transition-all ${
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-all ${
                           corSelecionada === cor
                             ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
                             : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
                         }`}
                       >
+                        {hex && (
+                          <span
+                            className="w-3 h-3 rounded-full border border-white/50 flex-shrink-0"
+                            style={{ background: hex }}
+                          />
+                        )}
                         {cor}
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
+            )}
 
-            {/* Tamanho */}
+            {/* Seleção de Tamanho */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs tracking-widest uppercase text-[#6B9E63] font-medium">Tamanho</p>
                 {produto.id_categoria_pai === 1 && (
-                  <button onClick={() => setGuiaAberto(true)} className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5 hover:text-[#3D6B4A] transition-colors">
+                  <button
+                    onClick={() => setGuiaAberto(true)}
+                    className="text-xs text-[#6B9E63] border-b border-[#6B9E63] pb-0.5 hover:text-[#3D6B4A] transition-colors"
+                  >
                     Guia de Tamanhos
                   </button>
                 )}
               </div>
               <div className="flex flex-wrap gap-2">
-                {tamanhos.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTamanhoSelecionado(t)}
-                    className={`w-12 h-10 rounded-lg border text-sm font-medium transition-all ${
-                      tamanhoSelecionado === t
-                        ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
-                        : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A] hover:text-[#3D6B4A]"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+                {tamanhos.map((t) => {
+                  const desativado = tamanhoDesativado(t);
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => !desativado && setTamanhoSelecionado(t)}
+                      disabled={desativado}
+                      className={`w-12 h-10 rounded-lg border text-sm font-medium transition-all
+                        ${desativado
+                          ? "border-[#E8F0E6] bg-white text-[#C8DFC4] opacity-40 cursor-not-allowed"
+                          : tamanhoSelecionado === t
+                            ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
+                            : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A] hover:text-[#3D6B4A]"
+                        }`}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
               </div>
               {!tamanhoSelecionado && (
                 <p className="text-xs text-[#8FAF8A] mt-2">Seleciona um tamanho para continuar</p>
               )}
               {varianteSelecionada && (
-                <p className="text-xs text-[#3D6B4A] mt-2">Stock disponível: {varianteSelecionada.stock_variante}</p>
+                <p className="text-xs text-[#3D6B4A] mt-2">
+                  Stock disponível: {varianteSelecionada.stock_variante}
+                </p>
               )}
             </div>
 
@@ -302,15 +377,20 @@ export default function ProductPage() {
               <button
                 onClick={handleAdicionar}
                 className={`flex-1 py-3 rounded-full text-sm tracking-widest uppercase font-medium transition-all ${
-                  adicionado ? "bg-[#2C5038] text-white"
-                  : varianteSelecionada ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
-                  : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
+                  adicionado
+                    ? "bg-[#2C5038] text-white"
+                    : varianteSelecionada
+                      ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
+                      : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
                 }`}
               >
                 {adicionado ? "✓ Adicionado!" : "Adicionar ao Carrinho"}
               </button>
 
-              <button onClick={handleWishlist} className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-colors text-lg">
+              <button
+                onClick={handleWishlist}
+                className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-colors text-lg"
+              >
                 {wishlist ? "❤️" : "🤍"}
               </button>
             </div>
@@ -319,8 +399,8 @@ export default function ProductPage() {
             <div className="grid grid-cols-3 gap-3 mb-8 py-4 border-t border-b border-[#E8F0E6]">
               {[
                 { icon: "🚚", text: "Envio Grátis", sub: "Acima de 50€" },
-                { icon: "↩️", text: "30 dias", sub: "Devolução fácil" },
-                { icon: "🔒", text: "Pagamento", sub: "100% Seguro" },
+                { icon: "↩️", text: "30 dias",      sub: "Devolução fácil" },
+                { icon: "🔒", text: "Pagamento",    sub: "100% Seguro" },
               ].map((b, i) => (
                 <div key={i} className="text-center">
                   <div className="text-xl mb-1">{b.icon}</div>
@@ -334,7 +414,10 @@ export default function ProductPage() {
             <div className="border-t border-[#E8F0E6]">
               {accordionItems.map((item, i) => (
                 <div key={i} className="border-b border-[#E8F0E6]">
-                  <button onClick={() => setAccordionAberto(accordionAberto === i ? null : i)} className="w-full flex items-center justify-between py-4 text-left">
+                  <button
+                    onClick={() => setAccordionAberto(accordionAberto === i ? null : i)}
+                    className="w-full flex items-center justify-between py-4 text-left"
+                  >
                     <span className="text-sm font-medium text-[#2C3A2C] tracking-wide">{item.title}</span>
                     <span className={`text-[#6B9E63] transition-transform duration-200 text-xs ${accordionAberto === i ? "rotate-180" : ""}`}>▼</span>
                   </button>
@@ -360,13 +443,12 @@ export default function ProductPage() {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {produtosRelacionados.map((prod) => (
-                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} onClick={() => window.scrollTo(0, 0)} className="block">
+                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} onClick={() => window.scrollTo(0,0)} className="block">
                   <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
                     <div className="bg-[#F0F5EE] h-52 flex items-center justify-center overflow-hidden">
                       {prod.imagem_principal
                         ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
-                        : <span className="text-4xl text-[#C8DFC4]">📷</span>
-                      }
+                        : <span className="text-4xl text-[#C8DFC4]">📷</span>}
                     </div>
                     <div className="p-4">
                       <div className="text-sm font-medium text-[#2C3A2C] mb-1">{prod.nome_produto}</div>
@@ -384,50 +466,37 @@ export default function ProductPage() {
       )}
 
       {/* Lightbox */}
-      {lightboxAberto && produto.imagens?.length > 0 && (
+      {lightboxAberto && imagensDaCor.length > 0 && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
           onClick={() => setLightboxAberto(false)}
         >
-          {/* Imagem principal */}
           <div className="relative max-w-4xl max-h-[90vh] w-full mx-8" onClick={e => e.stopPropagation()}>
             <img
-              src={produto.imagens[imagemAtiva]?.url}
+              key={`lb-${corSelecionada}-${imagemAtiva}`}
+              src={imagensDaCor[imagemAtiva]?.url}
               alt={produto.nome_produto}
               className="w-full h-full object-contain max-h-[80vh] rounded-xl"
+              style={{ opacity: imageFade ? 1 : 0, transition: 'opacity 0.3s ease' }}
             />
-
-            {/* Fechar */}
             <button
               onClick={() => setLightboxAberto(false)}
               className="absolute top-3 right-3 w-9 h-9 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
-            >
-              ✕
-            </button>
-
-            {/* Seta esquerda */}
+            >✕</button>
             {imagemAtiva > 0 && (
               <button
                 onClick={() => setImagemAtiva(imagemAtiva - 1)}
                 className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
-              >
-                ‹
-              </button>
+              >‹</button>
             )}
-
-            {/* Seta direita */}
-            {imagemAtiva < produto.imagens.length - 1 && (
+            {imagemAtiva < imagensDaCor.length - 1 && (
               <button
                 onClick={() => setImagemAtiva(imagemAtiva + 1)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center text-white transition-all text-lg"
-              >
-                ›
-              </button>
+              >›</button>
             )}
-
-            {/* Miniaturas */}
             <div className="flex gap-2 justify-center mt-4">
-              {produto.imagens.map((img, i) => (
+              {imagensDaCor.map((img, i) => (
                 <div
                   key={i}
                   onClick={() => setImagemAtiva(i)}
@@ -439,10 +508,8 @@ export default function ProductPage() {
                 </div>
               ))}
             </div>
-
-            {/* Contador */}
             <p className="text-center text-white/60 text-xs mt-3">
-              {imagemAtiva + 1} / {produto.imagens.length}
+              {imagemAtiva + 1} / {imagensDaCor.length}
             </p>
           </div>
         </div>
