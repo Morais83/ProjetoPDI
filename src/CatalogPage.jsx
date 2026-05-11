@@ -60,11 +60,11 @@ export default function CatalogPage() {
     setLoading(true);
     try {
       const url = termoPesquisa
-        ? `import.meta.env.VITE_API_URL/api/produtos/pesquisa?q=${encodeURIComponent(termoPesquisa)}`
-        : `import.meta.env.VITE_API_URL/api/produtos`;
+        ? `${import.meta.env.VITE_API_URL}/api/produtos/pesquisa?q=${encodeURIComponent(termoPesquisa)}`
+        : `${import.meta.env.VITE_API_URL}/api/produtos`;
       const [resProd, resCat] = await Promise.all([
         fetch(url),
-        fetch('import.meta.env.VITE_API_URL/api/categorias'),
+        fetch(`${import.meta.env.VITE_API_URL}/api/categorias`),
       ]);
       const prods = await resProd.json();
       const cats  = await resCat.json();

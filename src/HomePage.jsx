@@ -30,7 +30,7 @@ export default function HomePage() {
 
     const fetchProdutos = async () => {
       try {
-        const res = await fetch('import.meta.env.VITE_API_URL/api/produtos');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`);
         const data = await res.json();
         setProdutosRecentes(data.slice(0, 5));
       } catch (err) {

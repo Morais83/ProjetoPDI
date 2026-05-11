@@ -32,7 +32,7 @@ export default function PromoPage() {
   const carregarPromocoes = async () => {
     setLoading(true);
     try {
-      const res = await fetch('import.meta.env.VITE_API_URL/api/produtos/promocoes');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos/promocoes`);
       const dados = await res.json();
       setProdutos(dados);
     } catch (err) {

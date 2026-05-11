@@ -19,7 +19,7 @@ export default function GuiaTamanhos({ onClose }) {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/medidas', {
+    fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/medidas`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())
