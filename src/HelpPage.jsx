@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 
@@ -121,7 +122,23 @@ const topicos = [
 export default function HelpPage() {
   const [topicoAtivo, setTopicoAtivo] = useState("comprar");
   const [accordionAberto, setAccordionAberto] = useState(null);
+  
+  // 1. Adicionado para ler a URL
+  const location = useLocation();
 
+  // 2. NOVO EFFECT: Sincroniza a URL com o estado da página
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const topicoDaURL = params.get("topico");
+
+    if (topicoDaURL) {
+      setTopicoAtivo(topicoDaURL);
+      setAccordionAberto(null); // Fecha acordeões ao mudar de tema
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll suave para o topo
+    }
+  }, [location]); // Executa sempre que a URL mudar
+
+  // Teu Effect das fontes (mantido igual)
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
@@ -129,39 +146,41 @@ export default function HelpPage() {
     document.head.appendChild(link);
   }, []);
 
-  const topicoAtual = topicos.find((t) => t.id === topicoAtivo);
+  const topicoAtual = topicos.find((t) => t.id === topicoAtivo) || topicos[0];
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
+      {/* 1. Barra de Aviso */}
       <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
         ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
       </div>
 
       <Navbar />
 
-      {/* Banner */}
+      {/* 2. Banner de Título */}
       <div className="bg-[#E8F0E6] py-12 px-8 text-center">
         <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-2">Estamos aqui para ajudar</p>
         <h1 style={serif} className="text-5xl font-semibold text-[#1A2E1A]">Centro de Ajuda</h1>
       </div>
 
-      <div className="max-w-5xl mx-auto px-8 py-12 flex gap-10 items-start">
+      {/* 3. CORPO DA PÁGINA */}
+      <div className="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row gap-10 items-start">
 
-        {/* Sidebar */}
-        <div className="w-48 flex-shrink-0">
-          <div className="bg-[#3D6B4A] rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#E8F0E6]">
-              <p className="text-xs tracking-widest uppercase text-white font-bold">Ajuda</p>
+        {/* Sidebar (O Quadrado Verde) */}
+        <div className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-[#3D6B4A] rounded-2xl overflow-hidden shadow-lg sticky top-8">
+            <div className="px-5 py-4 border-b border-[#4F8A61]">
+              <p className="text-xs tracking-widest uppercase text-white font-bold">Menu de Ajuda</p>
             </div>
             <nav className="py-2">
               {topicos.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => { setTopicoAtivo(t.id); setAccordionAberto(null); }}
-                  className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${
+                  className={`w-full text-left px-5 py-3 text-sm transition-all duration-200 ${
                     topicoAtivo === t.id
-                      ? "text-white font-medium bg-[#4F8A61]"
-                      : "text-[#A8C4A8] hover:text-white hover:bg-[#5A9C70]"
+                      ? "text-white font-semibold bg-[#2C4A2C] pl-7"
+                      : "text-[#A8C4A8] hover:text-white hover:bg-[#457A54]"
                   }`}
                 >
                   {t.label}
@@ -171,15 +190,13 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Conteúdo */}
+        {/* Conteúdo Principal (Direita) */}
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl">{topicoAtual.icon}</span>
-            <h2 style={serif} className="text-3xl font-semibold text-[#1A2E1A]">{topicoAtual.label}</h2>
-          </div>
+          <h2 style={serif} className="text-3xl font-semibold text-[#1A2E1A] mb-6 border-b border-[#E8F0E6] pb-4">
+            {topicoAtual.label}
+          </h2>
 
-          {/* Accordion */}
-          <div className="border-t border-[#E8F0E6]">
+          <div className="space-y-1">
             {topicoAtual.items.map((item, i) => (
               <div key={i} className="border-b border-[#E8F0E6]">
                 <button
@@ -187,10 +204,12 @@ export default function HelpPage() {
                   className="w-full flex items-center justify-between py-5 text-left"
                 >
                   <span className="text-sm font-medium text-[#2C3A2C] tracking-wide">{item.title}</span>
-                  <span className={`text-[#6B9E63] transition-transform duration-200 text-xs ml-4 flex-shrink-0 ${accordionAberto === i ? "rotate-180" : ""}`}>▼</span>
+                  <span className={`text-[#6B9E63] transition-transform duration-200 ${accordionAberto === i ? "rotate-180" : ""}`}>
+                    ▼
+                  </span>
                 </button>
                 {accordionAberto === i && (
-                  <div className="pb-5">
+                  <div className="pb-5 animate-in fade-in duration-300">
                     <p className="text-sm text-[#5C6E5C] leading-relaxed">{item.content}</p>
                   </div>
                 )}

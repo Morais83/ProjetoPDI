@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "./adminlayout";
+import AdminLayout from "./AdminLayout";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 

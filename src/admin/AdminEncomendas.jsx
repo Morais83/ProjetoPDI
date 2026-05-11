@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "./adminlayout";
+import AdminLayout from "./AdminLayout";
 
 const statusStyles = {
   pendente: "bg-[#FEF9E7] text-[#A67C00]",
