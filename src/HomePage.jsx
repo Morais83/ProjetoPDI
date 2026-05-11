@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import { SkeletonCard, SkeletonCardTall } from "./Skeleton";
 import { Truck, RotateCcw, ShieldCheck, MessageSquare } from "lucide-react";
 
 export default function HomePage() {
@@ -86,46 +87,37 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero com slideshow */}
-      <section className="relative h-[70vh] overflow-hidden">
-        {[
-          "/hero/slide1.jpg",
-          "/hero/slide2.jpg",
-          "/hero/slide3.jpg",
-        ].map((img, i) => (
-          <div
-            key={i}
-            className="absolute inset-0 transition-opacity duration-1000"
-            style={{ opacity: slideAtivo === i ? 1 : 0 }}
-          >
+      <section className="relative h-[60vh] md:h-[70vh] overflow-hidden">
+        {["/hero/slide1.jpg","/hero/slide2.jpg","/hero/slide3.jpg"].map((img, i) => (
+          <div key={i} className="absolute inset-0 transition-opacity duration-1000"
+            style={{ opacity: slideAtivo === i ? 1 : 0 }}>
             <img src={img} alt="" className="w-full h-full object-cover object-center" />
             <div className="absolute inset-0 bg-black/35" />
           </div>
         ))}
 
         {/* Texto */}
-        <div className="relative z-10 h-full flex flex-col justify-end px-16 pb-16">
-          <h1 style={serif} className="text-white text-6xl md:text-7xl font-semibold mb-6 leading-tight max-w-2xl">
+        <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16 pb-10 md:pb-16">
+          <h1 style={serif} className="text-white text-4xl md:text-7xl font-semibold mb-5 leading-tight max-w-2xl">
             Elegância<br />que inspira.
           </h1>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3">
             <Link to="/catalogo" onClick={() => window.scrollTo(0, 0)}
-              className="bg-white text-[#1A2E1A] px-8 py-3.5 text-xs tracking-widest uppercase hover:bg-[#F0F5EE] transition-colors">
+              className="bg-white text-[#1A2E1A] px-6 md:px-8 py-3 md:py-3.5 text-xs tracking-widest uppercase hover:bg-[#F0F5EE] transition-all hover:-translate-y-0.5 active:translate-y-0">
               Ver Catálogo
             </Link>
             <Link to="/promocoes" onClick={() => window.scrollTo(0, 0)}
-              className="border border-white text-white px-8 py-3.5 text-xs tracking-widest uppercase hover:bg-white hover:text-[#1A2E1A] transition-all">
+              className="border border-white text-white px-6 md:px-8 py-3 md:py-3.5 text-xs tracking-widest uppercase hover:bg-white hover:text-[#1A2E1A] transition-all hover:-translate-y-0.5 active:translate-y-0">
               Promoções
             </Link>
           </div>
         </div>
 
         {/* Indicadores */}
-        <div className="absolute bottom-6 right-16 z-10 flex gap-2">
+        <div className="absolute bottom-4 md:bottom-6 right-6 md:right-16 z-10 flex gap-2">
           {[0,1,2].map(i => (
-            <button
-              key={i}
-              onClick={() => setSlideAtivo(i)}
-              className={`transition-all duration-300 rounded-full ${slideAtivo === i ? "w-8 h-2 bg-white" : "w-2 h-2 bg-white/50"}`}
+            <button key={i} onClick={() => setSlideAtivo(i)}
+              className={`transition-all duration-300 rounded-full ${slideAtivo === i ? "w-8 h-2 bg-white" : "w-2 h-2 bg-white/50 hover:bg-white/75"}`}
             />
           ))}
         </div>
@@ -142,32 +134,36 @@ export default function HomePage() {
           </div>
           
           {loading ? (
-            <p className="text-sm text-[#8FAF8A]">A carregar categorias...</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden border border-[#E8F0E6]">
+                  <div className="animate-pulse bg-gradient-to-r from-[#E8F0E6] via-[#F0F5EE] to-[#E8F0E6] h-48 md:h-64" style={{ backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+                  <div className="p-5 bg-white border-t border-[#E8F0E6]">
+                    <div className="animate-pulse bg-[#E8F0E6] h-4 w-2/3 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {categoriasPopulares.map((cat) => (
-                <Link
-                  key={cat.id}
+                <Link key={cat.id}
                   to={`/catalogo?categoria=${encodeURIComponent(cat.nome)}`}
                   onClick={() => window.scrollTo(0, 0)}
-                  className="rounded-2xl overflow-hidden border border-[#E8F0E6] hover:-translate-y-1 transition-transform cursor-pointer group block"
+                  className="rounded-2xl overflow-hidden border border-[#E8F0E6] hover:-translate-y-1.5 hover:shadow-md hover:shadow-green-100/60 transition-all duration-300 cursor-pointer group block"
                 >
-                  <div className={`${cat.bg} h-64 flex items-center justify-center text-6xl group-hover:scale-105 transition-transform overflow-hidden`}>
+                  <div className={`${cat.bg} h-48 md:h-64 flex items-center justify-center overflow-hidden`}>
                     {cat.imagem ? (
-                      <img 
-                        src={cat.imagem} 
-                        alt={cat.nome} 
-                        className="w-full h-full object-contain p-6" 
-                      />
+                      <img src={cat.imagem} alt={cat.nome}
+                        className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-500" />
                     ) : (
-                      <span style={serif} className="text-6xl font-semibold text-[#3D6B4A]">
+                      <span style={serif} className="text-6xl font-semibold text-[#3D6B4A] group-hover:scale-110 transition-transform duration-300">
                         {cat.nome.charAt(0)}
                       </span>
                     )}
                   </div>
-                  
-                  <div className="p-5 bg-white border-t border-[#E8F0E6]">
-                    <div className="text-base font-semibold text-[#2C3A2C]">{cat.nome}</div>
+                  <div className="p-4 md:p-5 bg-white border-t border-[#E8F0E6]">
+                    <div className="text-sm md:text-base font-semibold text-[#2C3A2C] group-hover:text-[#3D6B4A] transition-colors">{cat.nome}</div>
                   </div>
                 </Link>
               ))}
@@ -258,22 +254,23 @@ export default function HomePage() {
           </div>
           
           {loading ? (
-            <p className="text-sm text-[#8FAF8A]">A carregar novidades...</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              {[...Array(5)].map((_, i) => <SkeletonCardTall key={i} />)}
+            </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {produtosRecentes.map((prod) => (
-                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} className="block" onClick={() => window.scrollTo(0, 0)}>
-                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer h-full flex flex-col">
-                    
-                    <div className="bg-[#F0F5EE] h-64 flex items-center justify-center relative overflow-hidden shrink-0">
+                <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} className="block group" onClick={() => window.scrollTo(0, 0)}>
+                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100/60 hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full flex flex-col">
+                    <div className="bg-[#F0F5EE] h-48 md:h-64 flex items-center justify-center relative overflow-hidden shrink-0">
                       {prod.imagem_principal ? (
-                        <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                        <img src={prod.imagem_principal} alt={prod.nome_produto}
+                          className="h-full w-full object-cover group-hover:scale-107 transition-transform duration-500" />
                       ) : (
                         <span className="text-5xl text-[#C8DFC4]">📷</span>
                       )}
                     </div>
-
-                    <div className="p-3.5 flex flex-col flex-grow">
+                    <div className="p-3 md:p-3.5 flex flex-col flex-grow">
                       <div className="text-xs font-medium text-[#2C3A2C] mb-1.5 line-clamp-2 min-h-[32px]">
                         {prod.nome_produto}
                       </div>
