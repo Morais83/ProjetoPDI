@@ -26,7 +26,7 @@ export default function AdminUtilizadores() {
   const carregarUtilizadores = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/utilizadores');
+      const res = await fetch('import.meta.env.VITE_API_URL/api/utilizadores');
       const dados = await res.json();
       setUtilizadores(dados);
     } catch (err) {
@@ -49,7 +49,7 @@ export default function AdminUtilizadores() {
   const guardar = async () => {
     if (!form.nome || !form.email) return;
     try {
-      await fetch(`http://localhost:5000/api/utilizadores/${editando}`, {
+      await fetch(`import.meta.env.VITE_API_URL/api/utilizadores/${editando}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -64,7 +64,7 @@ export default function AdminUtilizadores() {
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar este utilizador?")) return;
     try {
-      await fetch(`http://localhost:5000/api/utilizadores/${id}`, { method: 'DELETE' });
+      await fetch(`import.meta.env.VITE_API_URL/api/utilizadores/${id}`, { method: 'DELETE' });
       carregarUtilizadores();
     } catch (err) {
       console.error(err);

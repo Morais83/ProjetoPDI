@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -32,7 +32,7 @@ export default function PromoPage() {
   const carregarPromocoes = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/produtos/promocoes');
+      const res = await fetch('import.meta.env.VITE_API_URL/api/produtos/promocoes');
       const dados = await res.json();
       setProdutos(dados);
     } catch (err) {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -39,7 +39,7 @@ export default function BrandsPage() {
     // IR BUSCAR OS PRODUTOS À BASE DE DADOS
     const fetchProdutos = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/produtos');
+        const res = await fetch('import.meta.env.VITE_API_URL/api/produtos');
         const data = await res.json();
         setProdutosDb(data);
       } catch (err) {

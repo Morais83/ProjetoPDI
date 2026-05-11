@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const categorias = [
   { id: 1, nome: "Vestidos",        emoji: "👗", bg: "bg-[#E8F0E6]" },
@@ -30,7 +30,7 @@ export default function HomePage() {
 
     const fetchProdutos = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/produtos');
+        const res = await fetch('import.meta.env.VITE_API_URL/api/produtos');
         const data = await res.json();
         setProdutosRecentes(data.slice(0, 5));
       } catch (err) {

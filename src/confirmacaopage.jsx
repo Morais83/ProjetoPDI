@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import Navbar from "./navbar";
-import Footer from "./footer";
+import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -17,7 +17,7 @@ export default function ConfirmacaoPage() {
     document.head.appendChild(link);
 
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5000/api/encomendas/${id}`, {
+    fetch(`import.meta.env.VITE_API_URL/api/encomendas/${id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())

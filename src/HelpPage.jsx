@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -28,7 +28,7 @@ const statusLabels = {
   enviado: "Enviado", entregue: "Entregue", cancelado: "Cancelado",
 };
 
-const BASE = 'http://localhost:5000/api';
+const BASE = 'import.meta.env.VITE_API_URL/api';
 
 function FavoritosSecao({ serif }) {
   const [favoritos, setFavoritos] = useState([]);
@@ -36,7 +36,7 @@ function FavoritosSecao({ serif }) {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/favoritos', {
+    fetch('import.meta.env.VITE_API_URL/api/favoritos', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -45,7 +45,7 @@ function FavoritosSecao({ serif }) {
   }, []);
 
   const remover = async (id_produto) => {
-    await fetch(`http://localhost:5000/api/favoritos/${id_produto}`, {
+    await fetch(`import.meta.env.VITE_API_URL/api/favoritos/${id_produto}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -97,7 +97,7 @@ function MedidasSecao({ serif, token }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/utilizadores/me/medidas', {
+    fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/medidas', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())
@@ -117,7 +117,7 @@ function MedidasSecao({ serif, token }) {
 
   const guardar = async () => {
     try {
-      await fetch('http://localhost:5000/api/utilizadores/me/medidas', {
+      await fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/medidas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(medidas),

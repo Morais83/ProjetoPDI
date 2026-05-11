@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
@@ -60,11 +60,11 @@ export default function CatalogPage() {
     setLoading(true);
     try {
       const url = termoPesquisa
-        ? `http://localhost:5000/api/produtos/pesquisa?q=${encodeURIComponent(termoPesquisa)}`
-        : `http://localhost:5000/api/produtos`;
+        ? `import.meta.env.VITE_API_URL/api/produtos/pesquisa?q=${encodeURIComponent(termoPesquisa)}`
+        : `import.meta.env.VITE_API_URL/api/produtos`;
       const [resProd, resCat] = await Promise.all([
         fetch(url),
-        fetch('http://localhost:5000/api/categorias'),
+        fetch('import.meta.env.VITE_API_URL/api/categorias'),
       ]);
       const prods = await resProd.json();
       const cats  = await resCat.json();
