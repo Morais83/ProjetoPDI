@@ -331,10 +331,10 @@ export default function ProfilePage() {
  
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-8 py-10 flex gap-8 items-start">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
 
         {/* Sidebar */}
-        <aside className="w-60 flex-shrink-0 sticky top-24 space-y-4">
+        <aside className="w-full md:w-60 md:flex-shrink-0 md:sticky md:top-24 space-y-4">
           {/* Cartão avatar */}
           <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6 text-center">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#3D6B4A] to-[#2C5038] flex items-center justify-center text-xl font-bold text-white mx-auto mb-3 shadow-sm">
@@ -369,7 +369,7 @@ export default function ProfilePage() {
         </aside>
 
         {/* Conteúdo */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6">
 
           {/* Perfil */}
           {secaoAtiva === "perfil" && (

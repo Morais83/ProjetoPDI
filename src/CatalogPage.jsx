@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
-import { Search } from "lucide-react";
+import { SkeletonCard } from "./Skeleton";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
@@ -42,6 +43,7 @@ export default function CatalogPage() {
   const [precoMax, setPrecoMax]         = useState(500);
   const [loading, setLoading]           = useState(true);
   const [ordenacao, setOrdenacao]       = useState("recentes");
+  const [filtroDrawer, setFiltroDrawer] = useState(false);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -160,12 +162,117 @@ export default function CatalogPage() {
     else setSearchParams(departamento ? { departamento, categoria: cat } : { categoria: cat });
   };
 
+  // Conteúdo dos filtros (reutilizado em desktop sidebar e mobile drawer)
+  const FiltrosConteudo = () => (
+    <div className="space-y-6">
+      {filtrosAtivos > 0 && (
+        <button onClick={limparFiltros}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#3D6B4A] text-white text-xs tracking-wide hover:bg-[#2C5038] transition-all">
+          <span>Limpar filtros</span>
+          <span className="bg-white text-[#3D6B4A] rounded-full w-5 h-5 flex items-center justify-center font-semibold text-[10px]">{filtrosAtivos}</span>
+        </button>
+      )}
+
+      {tamanhosDisponiveis.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Tamanho</p>
+          <div className="flex flex-wrap gap-2">
+            {tamanhosDisponiveis.map(t => (
+              <button key={t} onClick={() => toggleTamanho(t)}
+                className={`px-2 h-9 rounded-lg border text-xs font-medium transition-all ${
+                  tamanhosSelecionados.includes(t)
+                    ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
+                    : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
+                }`}>{t}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {coresDisponiveis.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Cor</p>
+          <div className="flex flex-col gap-1.5">
+            {coresDisponiveis.map(c => {
+              const hex = HEX_CORES[capitalizar(c)];
+              const ativo = coresSelecionadas.includes(c);
+              return (
+                <button key={c} onClick={() => toggleCor(c)}
+                  className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-lg transition-all text-left ${ativo ? "bg-[#E8F0E6]" : "hover:bg-[#F7F9F5]"}`}>
+                  <span className="relative flex-shrink-0">
+                    <span className={`block w-6 h-6 rounded-full border-2 transition-all ${ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"} ${!hex ? "bg-gradient-to-br from-pink-300 via-yellow-200 to-blue-300" : ""}`}
+                      style={hex ? { background: hex } : {}} />
+                    {ativo && <span className="absolute inset-0 flex items-center justify-center"><span className={`text-[9px] font-bold ${hex === "#f0f0f0" || hex === "#facc15" || hex === "#f5f0e8" ? "text-[#3D6B4A]" : "text-white"}`}>✓</span></span>}
+                  </span>
+                  <span className={`text-xs transition-colors ${ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"}`}>{capitalizar(c)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
+        <div className="flex items-center border border-[#C8DFC4] rounded-lg px-3 py-2 bg-white gap-2 focus-within:border-[#3D6B4A] transition-colors">
+          <Search size={14} strokeWidth={1.5} className="text-[#8FAF8A]" />
+          <input type="text" placeholder="Pesquisar por marca" value={marcaPesquisa}
+            onChange={e => setMarcaPesquisa(e.target.value)}
+            className="text-xs outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full" />
+          {marcaPesquisa && <button onClick={() => setMarcaPesquisa("")} className="text-[#C8DFC4] hover:text-[#3D6B4A] text-xs">✕</button>}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
+            <div className="flex items-center">
+              <input type="number" min="0" max={precoMax} value={precoMin} onChange={e => setPrecoMin(Number(e.target.value))}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+          <span className="text-xs text-[#C8DFC4]">—</span>
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
+            <div className="flex items-center">
+              <input type="number" min={precoMin} max="9999" value={precoMax} onChange={e => setPrecoMax(Number(e.target.value))}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
       <Navbar />
 
+      {/* Drawer mobile de filtros */}
+      <div className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 md:hidden ${filtroDrawer ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setFiltroDrawer(false)} />
+      <div className={`fixed top-0 right-0 h-full w-[85vw] max-w-xs z-50 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out md:hidden ${filtroDrawer ? "translate-x-0" : "translate-x-full"}`}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8F0E6]">
+          <p className="text-sm font-semibold text-[#1A2E1A]">Filtros</p>
+          <button onClick={() => setFiltroDrawer(false)} className="p-1 text-[#8FAF8A] hover:text-[#3D6B4A]"><X size={20} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-5">
+          <FiltrosConteudo />
+        </div>
+        <div className="p-4 border-t border-[#E8F0E6]">
+          <button onClick={() => setFiltroDrawer(false)}
+            className="w-full py-3 bg-[#3D6B4A] text-white text-sm rounded-xl hover:bg-[#2C5038] transition-colors">
+            Ver resultados ({produtosFiltrados.length})
+          </button>
+        </div>
+      </div>
+
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
         <div className="flex items-center gap-2 text-xs text-[#8FAF8A]">
           <Link to="/" className="hover:text-[#3D6B4A] transition-colors">Início</Link>
           <span>/</span>
@@ -175,134 +282,32 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-8 pb-16 flex gap-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-16 flex gap-8">
 
-        {/* ── Sidebar ── */}
-        <div className="w-52 flex-shrink-0 space-y-6">
-
-          {/* Limpar filtros */}
-          {filtrosAtivos > 0 && (
-            <button
-              onClick={limparFiltros}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#3D6B4A] text-white text-xs tracking-wide hover:bg-[#2C5038] transition-all"
-            >
-              <span>Limpar filtros</span>
-              <span className="bg-white text-[#3D6B4A] rounded-full w-5 h-5 flex items-center justify-center font-semibold text-[10px]">
-                {filtrosAtivos}
-              </span>
-            </button>
-          )}
-
-          {/* Tamanho */}
-          {tamanhosDisponiveis.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Tamanho</p>
-              <div className="flex flex-wrap gap-2">
-                {tamanhosDisponiveis.map(t => (
-                  <button key={t} onClick={() => toggleTamanho(t)}
-                    className={`px-2 h-9 rounded-lg border text-xs font-medium transition-all ${
-                      tamanhosSelecionados.includes(t)
-                        ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
-                        : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
-                    }`}>
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Cor */}
-          {coresDisponiveis.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Cor</p>
-              <div className="flex flex-col gap-1.5">
-                {coresDisponiveis.map(c => {
-                  const hex = HEX_CORES[capitalizar(c)];
-                  const ativo = coresSelecionadas.includes(c);
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => toggleCor(c)}
-                      className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-lg transition-all text-left ${
-                        ativo ? "bg-[#E8F0E6]" : "hover:bg-[#F7F9F5]"
-                      }`}
-                    >
-                      {/* Swatch */}
-                      <span className="relative flex-shrink-0">
-                        <span
-                          className={`block w-6 h-6 rounded-full border-2 transition-all ${
-                            ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"
-                          } ${!hex ? "bg-gradient-to-br from-pink-300 via-yellow-200 to-blue-300" : ""}`}
-                          style={hex ? { background: hex } : {}}
-                        />
-                        {ativo && (
-                          <span className="absolute inset-0 flex items-center justify-center">
-                            <span className={`text-[9px] font-bold ${hex === "#f0f0f0" || hex === "#facc15" || hex === "#f5f0e8" ? "text-[#3D6B4A]" : "text-white"}`}>✓</span>
-                          </span>
-                        )}
-                      </span>
-                      {/* Nome */}
-                      <span className={`text-xs transition-colors ${
-                        ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"
-                      }`}>
-                        {capitalizar(c)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Marca */}
-          <div>
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
-            <div className="flex items-center border border-[#C8DFC4] rounded-lg px-3 py-2 bg-white gap-2 focus-within:border-[#3D6B4A] transition-colors">
-              <Search size={18} strokeWidth={1.5} />
-              <input
-                type="text"
-                placeholder="Pesquisar por marca"
-                value={marcaPesquisa}
-                onChange={e => setMarcaPesquisa(e.target.value)}
-                className="text-xs outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full"
-              />
-              {marcaPesquisa && (
-                <button onClick={() => setMarcaPesquisa("")} className="text-[#C8DFC4] hover:text-[#3D6B4A] text-xs">✕</button>
-              )}
-            </div>
-          </div>
-
-          {/* Preço */}
-          <div>
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
-                <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
-                <div className="flex items-center">
-                  <input type="number" min="0" max={precoMax} value={precoMin}
-                    onChange={e => setPrecoMin(Number(e.target.value))}
-                    className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                  <span className="text-xs text-[#8FAF8A]">€</span>
-                </div>
-              </div>
-              <span className="text-xs text-[#C8DFC4]">—</span>
-              <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
-                <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
-                <div className="flex items-center">
-                  <input type="number" min={precoMin} max="9999" value={precoMax}
-                    onChange={e => setPrecoMax(Number(e.target.value))}
-                    className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                  <span className="text-xs text-[#8FAF8A]">€</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+        {/* ── Sidebar desktop ── */}
+        <div className="hidden md:block w-52 flex-shrink-0 space-y-6">
+          <FiltrosConteudo />
         </div>
 
         {/* ── Conteúdo ── */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
+
+          {/* Botão filtros mobile */}
+          <div className="md:hidden flex items-center justify-between mb-4">
+            <button onClick={() => setFiltroDrawer(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-[#C8DFC4] rounded-xl text-sm text-[#4A5C4A] hover:border-[#3D6B4A] hover:text-[#3D6B4A] transition-all bg-white">
+              <SlidersHorizontal size={15} />
+              Filtros
+              {filtrosAtivos > 0 && <span className="bg-[#3D6B4A] text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-semibold">{filtrosAtivos}</span>}
+            </button>
+            <select value={ordenacao} onChange={e => setOrdenacao(e.target.value)}
+              className="text-xs border border-[#C8DFC4] rounded-xl px-3 py-2 bg-white text-[#4A5C4A] outline-none focus:border-[#3D6B4A] transition-colors cursor-pointer">
+              <option value="recentes">Mais recentes</option>
+              <option value="preco-asc">Preço ↑</option>
+              <option value="preco-desc">Preço ↓</option>
+              <option value="nome">Nome A→Z</option>
+            </select>
+          </div>
 
           {/* Categorias */}
           <div className="flex flex-wrap gap-2 mb-4">
@@ -372,18 +377,20 @@ export default function CatalogPage() {
 
           {/* Grid */}
           {loading ? (
-            <p className="text-sm text-[#8FAF8A]">A carregar produtos...</p>
-          ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
               {produtosFiltrados.map(prod => (
                 <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto}
-                  className="block" onClick={() => window.scrollTo(0, 0)}>
-                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
-                    <div className="bg-[#F0F5EE] h-52 flex items-center justify-center overflow-hidden relative">
+                  className="block group" onClick={() => window.scrollTo(0, 0)}>
+                  <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100/60 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    <div className="bg-[#F0F5EE] h-44 md:h-52 flex items-center justify-center overflow-hidden relative">
                       {prod.imagem_principal
                         ? <img src={prod.imagem_principal} alt={prod.nome_produto}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        : <span className="text-6xl text-[#C8DFC4]">📷</span>
+                            className="h-full w-full object-cover group-hover:scale-107 transition-transform duration-500" />
+                        : <span className="text-5xl text-[#C8DFC4]">📷</span>
                       }
                       {prod.preco_anterior && (
                         <span className="absolute top-2 left-2 bg-[#C0392B] text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
@@ -391,11 +398,11 @@ export default function CatalogPage() {
                         </span>
                       )}
                     </div>
-                    <div className="p-4">
-                      <div className="text-xs text-[#8FAF8A] mb-1">{prod.nome_categoria}</div>
-                      <div className="text-sm font-medium text-[#2C3A2C] mb-1.5">{prod.nome_produto}</div>
+                    <div className="p-3 md:p-4">
+                      <div className="text-[10px] text-[#8FAF8A] mb-1">{prod.nome_categoria}</div>
+                      <div className="text-xs md:text-sm font-medium text-[#2C3A2C] mb-1.5 line-clamp-2">{prod.nome_produto}</div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-base font-semibold text-[#3D6B4A]">
+                        <span className="text-sm md:text-base font-semibold text-[#3D6B4A]">
                           {parseFloat(prod.preco).toFixed(2).replace('.', ',')}€
                         </span>
                         {prod.preco_anterior && (
@@ -404,21 +411,17 @@ export default function CatalogPage() {
                           </span>
                         )}
                       </div>
-                      {/* Swatches das cores disponíveis */}
                       {prod.cores_disponiveis && (
                         <div className="flex items-center gap-1 mt-2">
                           {parseLista(prod.cores_disponiveis).slice(0, 4).map(c => (
-                            <span
-                              key={c}
-                              className="w-4 h-4 rounded-full border border-white shadow-sm ring-1 ring-[#D1D5DB]"
+                            <span key={c}
+                              className="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full border border-white shadow-sm ring-1 ring-[#D1D5DB]"
                               style={{ background: HEX_CORES[capitalizar(c)] || '#E8F0E6' }}
                               title={capitalizar(c)}
                             />
                           ))}
                           {parseLista(prod.cores_disponiveis).length > 4 && (
-                            <span className="text-[10px] text-[#8FAF8A] ml-0.5">
-                              +{parseLista(prod.cores_disponiveis).length - 4}
-                            </span>
+                            <span className="text-[10px] text-[#8FAF8A] ml-0.5">+{parseLista(prod.cores_disponiveis).length - 4}</span>
                           )}
                         </div>
                       )}

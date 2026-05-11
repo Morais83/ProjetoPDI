@@ -183,8 +183,29 @@ export default function ProductPage() {
   // ── Estados de carregamento ──────────────────────────────────────────────────
 
   if (loading) return (
-    <div style={sans} className="min-h-screen bg-[#F7F9F5] flex items-center justify-center">
-      <p className="text-sm text-[#8FAF8A]">A carregar produto...</p>
+    <div style={sans} className="min-h-screen bg-[#F7F9F5]">
+      <Navbar />
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+          {/* Skeleton galeria */}
+          <div className="flex gap-4">
+            <div className="flex flex-col gap-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="w-16 h-20 rounded-xl animate-pulse bg-[#E8F0E6]" />
+              ))}
+            </div>
+            <div className="flex-1 aspect-[3/4] rounded-2xl animate-pulse bg-[#E8F0E6]" />
+          </div>
+          {/* Skeleton info */}
+          <div className="pt-2 space-y-4">
+            <div className="animate-pulse bg-[#E8F0E6] h-3 w-1/4 rounded-full" />
+            <div className="animate-pulse bg-[#E8F0E6] h-8 w-3/4 rounded-full" />
+            <div className="animate-pulse bg-[#E8F0E6] h-6 w-1/5 rounded-full" />
+            <div className="animate-pulse bg-[#E8F0E6] h-20 w-full rounded-xl mt-4" />
+            <div className="animate-pulse bg-[#E8F0E6] h-12 w-full rounded-full mt-4" />
+          </div>
+        </div>
+      </div>
     </div>
   );
   if (!produto) return (
