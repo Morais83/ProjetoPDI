@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Footer from "./footer";
 import Navbar from "./navbar";
 import { User, MapPin, Ruler, ShoppingBag, Heart, Headphones, Lock, LogOut, Mail, Phone, Package, ChevronRight, X } from "lucide-react";
@@ -168,7 +168,9 @@ function MedidasSecao({ serif, token }) {
 }
 
 export default function ProfilePage() {
-  const [secaoAtiva, setSecaoAtiva] = useState("perfil");
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [secaoAtiva, setSecaoAtiva] = useState(searchParams.get("tab") || "perfil");
   const [perfil, setPerfil] = useState({ nome: "", email: "", telefone: "", prefixo_tel: "+351" });
   const [senha, setSenha] = useState({ atual: "", nova: "", confirmar: "" });
   const [moradas, setMoradas] = useState([]);
@@ -326,46 +328,45 @@ export default function ProfilePage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
+ 
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-8 py-10 flex gap-8 items-start">
 
         {/* Sidebar */}
-        <div className="w-52 flex-shrink-0">
-          <div className="bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden">
-            <div className="px-5 py-5 border-b border-[#E8F0E6]">
-              <div className="w-12 h-12 rounded-full bg-[#E8F0E6] flex items-center justify-center text-xl font-semibold text-[#3D6B4A] mb-2">
-                {perfil.nome.charAt(0)}
-              </div>
-              <p style={serif} className="text-lg font-semibold text-[#1A2E1A]">{perfil.nome}</p>
-              <p className="text-xs text-[#8FAF8A]">{perfil.email}</p>
+        <aside className="w-60 flex-shrink-0 sticky top-24 space-y-4">
+          {/* Cartão avatar */}
+          <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6 text-center">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#3D6B4A] to-[#2C5038] flex items-center justify-center text-xl font-bold text-white mx-auto mb-3 shadow-sm">
+              {perfil.nome.charAt(0).toUpperCase()}
             </div>
-            <nav className="py-2">
-              {secoes.map(s => {
-                const Icon = s.icon;
-                return (
-                  <button key={s.id} onClick={() => setSecaoAtiva(s.id)}
-                    className={`w-full flex items-center gap-3 text-left px-5 py-2.5 text-sm transition-colors ${
-                      secaoAtiva === s.id ? "text-[#3D6B4A] font-medium bg-[#F0F5EE]" : "text-[#4A5C4A] hover:text-[#3D6B4A] hover:bg-[#F7F9F5]"
-                    }`}>
-                    <Icon size={16} />
-                    {s.label}
-                  </button>
-                )
-              })}
-            </nav>
-            <div className="px-3 py-3 border-t border-[#E8F0E6]">
-              <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('utilizador'); window.location.href = '/'; }}
-                className="w-full flex items-center gap-3 text-left px-5 py-2.5 text-sm text-[#C0392B] hover:bg-[#FDECEA] rounded-lg transition-colors">
-                <LogOut size={16} />
-                Sair
-              </button>
-            </div>
+            <p className="text-sm font-semibold text-[#1A2E1A] truncate">{perfil.nome}</p>
+            <p className="text-xs text-[#8FAF8A] truncate mt-0.5">{perfil.email}</p>
           </div>
-        </div>
+
+          {/* Navegação */}
+          <nav className="bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden">
+            {secoes.map(s => {
+              const Icon = s.icon;
+              const ativo = secaoAtiva === s.id && s.id !== "servico";
+              return (
+                <button key={s.id}
+                  onClick={() => s.id === "servico" ? navigate("/suporte") : setSecaoAtiva(s.id)}
+                  className={`w-full flex items-center gap-3 text-left px-4 py-3 text-sm transition-all border-b border-[#F0F5EE] last:border-0 ${
+                    ativo ? "bg-[#F0F5EE] text-[#3D6B4A] font-medium" : "text-[#4A5C4A] hover:bg-[#F7F9F5] hover:text-[#3D6B4A]"
+                  }`}>
+                  <Icon size={15} className={ativo ? "text-[#3D6B4A]" : "text-[#A8C4A8]"} />
+                  <span className="flex-1">{s.label}</span>
+                </button>
+              );
+            })}
+            <button
+              onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('utilizador'); window.location.href = '/'; }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#C0392B] hover:bg-[#FDECEA] transition-all">
+              <LogOut size={15} /> Sair
+            </button>
+          </nav>
+        </aside>
 
         {/* Conteúdo */}
         <div className="flex-1 space-y-6">

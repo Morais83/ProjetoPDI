@@ -25,7 +25,8 @@ export default function CartPage() {
   const alterarQuantidade = (id_variante, delta) => {
     const prod = produtos.find(p => p.id_variante === id_variante);
     if (!prod) return;
-    const novaQtd = Math.max(1, prod.quantidade + delta);
+    const maxQtd = prod.stock > 0 ? prod.stock : 999;
+    const novaQtd = Math.min(maxQtd, Math.max(1, prod.quantidade + delta));
     atualizarQuantidade(id_variante, novaQtd);
     carregarCarrinho();
     window.dispatchEvent(new Event('carrinho-atualizado'));
@@ -95,18 +96,27 @@ export default function CartPage() {
                       <p style={serif} className="text-xl font-semibold text-[#3D6B4A]">{(prod.preco * prod.quantidade).toFixed(2).replace(".", ",")}€</p>
                     </div>
 
-                    <div className="flex gap-4 text-xs text-[#5C6E5C] mb-4">
+                    <div className="flex gap-4 text-xs text-[#5C6E5C] mb-3">
                       <span>Cor: <span className="text-[#2C3A2C] font-medium">{prod.cor}</span></span>
                       <span>Tamanho: <span className="text-[#2C3A2C] font-medium">{prod.tamanho}</span></span>
                     </div>
+
+                    {/* Aviso de stock baixo */}
+                    {prod.stock > 0 && prod.stock <= 3 && (
+                      <p className="text-[10px] text-[#A67C00] bg-[#FEF9E7] px-2 py-1 rounded-lg mb-3 inline-block">
+                        ⚠ Apenas {prod.stock} em stock
+                      </p>
+                    )}
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center border border-[#C8DFC4] rounded-full overflow-hidden bg-white">
                         <button onClick={() => alterarQuantidade(prod.id_variante, -1)}
                           className="w-8 h-8 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-base">−</button>
                         <span className="w-8 text-center text-sm font-medium text-[#2C2C2C]">{prod.quantidade}</span>
-                        <button onClick={() => alterarQuantidade(prod.id_variante, 1)}
-                          className="w-8 h-8 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-base">+</button>
+                        <button
+                          onClick={() => alterarQuantidade(prod.id_variante, 1)}
+                          disabled={prod.stock > 0 && prod.quantidade >= prod.stock}
+                          className="w-8 h-8 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-base disabled:opacity-30">+</button>
                       </div>
                       <button onClick={() => remover(prod.id_variante)}
                         className="text-xs text-[#C0392B] hover:underline flex items-center gap-1">

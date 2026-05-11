@@ -19,6 +19,8 @@ import CartPage from "./CartPage";
 import BrandsPage from "./brandspage";
 import PromoPage from "./promopage";
 import ResetPasswordPage from './resetpasswordpage';
+import SuportePage from './SuportePage';
+import AdminSuporte from './admin/AdminSuporte';
 
 export default function App() {
   return (
@@ -43,7 +45,8 @@ export default function App() {
         <Route path="/marcas" element={<BrandsPage />} />
         <Route path="/promocoes" element={<PromoPage />} />
         <Route path="/recuperar-senha/:token" element={<ResetPasswordPage />} />
-        
+        <Route path="/suporte" element={<SuportePage />} />
+        <Route path="/admin/suporte" element={<AdminSuporte />} />
       </Routes>
     </Router>
   );

@@ -138,8 +138,15 @@ export default function ProductPage() {
 
   // ── Ações ────────────────────────────────────────────────────────────────────
 
+  // Stock da variante selecionada (0 se sem stock ou não selecionada)
+  const stockAtual = varianteSelecionada ? Number(varianteSelecionada.stock_variante) : 0;
+  const semStock   = varianteSelecionada && stockAtual === 0;
+  const stockBaixo = varianteSelecionada && stockAtual > 0 && stockAtual <= 3;
+
   const handleAdicionar = () => {
-    if (!varianteSelecionada) return;
+    if (!varianteSelecionada || semStock) return;
+    // Garante que quantidade não excede stock disponível
+    const qtdFinal = Math.min(quantidade, stockAtual);
     adicionarAoCarrinho({
       id_variante:  varianteSelecionada.id_variante,
       id_produto:   produto.id_produto,
@@ -148,7 +155,8 @@ export default function ProductPage() {
       preco:        parseFloat(produto.preco),
       cor:          varianteSelecionada.cor,
       tamanho:      varianteSelecionada.tamanho,
-      quantidade,
+      quantidade:   qtdFinal,
+      stock:        stockAtual,
       imagem_url:   imagensDaCor[0]?.url || produto.imagens?.[0]?.url || null,
     });
     setAdicionado(true);
@@ -338,53 +346,93 @@ export default function ProductPage() {
               <div className="flex flex-wrap gap-2">
                 {tamanhos.map((t) => {
                   const desativado = tamanhoDesativado(t);
+                  const stockT = corSelecionada ? (stockPorTamanho[t] ?? null) : null;
+                  const semStockT = stockT !== null && Number(stockT) === 0;
                   return (
-                    <button
-                      key={t}
-                      onClick={() => !desativado && setTamanhoSelecionado(t)}
-                      disabled={desativado}
-                      className={`w-12 h-10 rounded-lg border text-sm font-medium transition-all
-                        ${desativado
-                          ? "border-[#E8F0E6] bg-white text-[#C8DFC4] opacity-40 cursor-not-allowed"
-                          : tamanhoSelecionado === t
-                            ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
-                            : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A] hover:text-[#3D6B4A]"
-                        }`}
-                    >
-                      {t}
-                    </button>
+                    <div key={t} className="relative">
+                      <button
+                        onClick={() => !desativado && setTamanhoSelecionado(t)}
+                        disabled={desativado}
+                        title={semStockT ? "Sem stock" : stockT !== null ? `${stockT} em stock` : ""}
+                        className={`w-12 h-10 rounded-lg border text-sm font-medium transition-all relative
+                          ${semStockT
+                            ? "border-[#E8F0E6] bg-white text-[#D0D0D0] cursor-not-allowed"
+                            : desativado
+                              ? "border-[#E8F0E6] bg-white text-[#C8DFC4] opacity-40 cursor-not-allowed"
+                              : tamanhoSelecionado === t
+                                ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
+                                : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A] hover:text-[#3D6B4A]"
+                          }`}
+                      >
+                        {t}
+                        {/* Risca diagonal para sem stock */}
+                        {semStockT && (
+                          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <svg className="w-full h-full absolute" viewBox="0 0 48 40" preserveAspectRatio="none">
+                              <line x1="4" y1="4" x2="44" y2="36" stroke="#D0D0D0" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    </div>
                   );
                 })}
               </div>
-              {!tamanhoSelecionado && (
+
+              {/* Mensagem de estado do stock */}
+              {!tamanhoSelecionado && !corSelecionada && (
+                <p className="text-xs text-[#8FAF8A] mt-2">Seleciona uma cor e um tamanho para continuar</p>
+              )}
+              {!tamanhoSelecionado && corSelecionada && (
                 <p className="text-xs text-[#8FAF8A] mt-2">Seleciona um tamanho para continuar</p>
               )}
-              {varianteSelecionada && (
-                <p className="text-xs text-[#3D6B4A] mt-2">
-                  Stock disponível: {varianteSelecionada.stock_variante}
-                </p>
+              {semStock && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#FDECEA] border border-[#F5C6C0] rounded-xl">
+                  <span className="text-[#C0392B] text-xs">●</span>
+                  <p className="text-xs font-medium text-[#C0392B]">Sem stock disponível para esta variante</p>
+                </div>
+              )}
+              {stockBaixo && (
+                <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-[#FEF9E7] border border-[#F0D078] rounded-xl">
+                  <span className="text-[#A67C00] text-xs">●</span>
+                  <p className="text-xs font-medium text-[#A67C00]">Apenas {stockAtual} {stockAtual === 1 ? 'unidade' : 'unidades'} em stock!</p>
+                </div>
+              )}
+              {varianteSelecionada && !semStock && !stockBaixo && (
+                <p className="text-xs text-[#6B9E63] mt-2">✓ {stockAtual} unidades disponíveis</p>
               )}
             </div>
 
             {/* Quantidade + Botões */}
             <div className="flex gap-3 mb-6">
               <div className="flex items-center border border-[#C8DFC4] rounded-full overflow-hidden bg-white">
-                <button onClick={() => setQuantidade(Math.max(1, quantidade - 1))} className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light">−</button>
+                <button
+                  onClick={() => setQuantidade(Math.max(1, quantidade - 1))}
+                  disabled={semStock}
+                  className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light disabled:opacity-30"
+                >−</button>
                 <span className="w-8 text-center text-sm font-medium text-[#2C2C2C]">{quantidade}</span>
-                <button onClick={() => setQuantidade(quantidade + 1)} className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light">+</button>
+                <button
+                  onClick={() => setQuantidade(Math.min(stockAtual || 99, quantidade + 1))}
+                  disabled={semStock || (varianteSelecionada && quantidade >= stockAtual)}
+                  className="w-10 h-12 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-lg font-light disabled:opacity-30"
+                >+</button>
               </div>
 
               <button
                 onClick={handleAdicionar}
+                disabled={!varianteSelecionada || semStock}
                 className={`flex-1 py-3 rounded-full text-sm tracking-widest uppercase font-medium transition-all ${
                   adicionado
                     ? "bg-[#2C5038] text-white"
-                    : varianteSelecionada
-                      ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
-                      : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
+                    : semStock
+                      ? "bg-[#F3F3F3] text-[#B0B0B0] cursor-not-allowed"
+                      : varianteSelecionada
+                        ? "bg-[#3D6B4A] text-white hover:bg-[#2C5038]"
+                        : "bg-[#C8DFC4] text-[#8FAF8A] cursor-not-allowed"
                 }`}
               >
-                {adicionado ? "✓ Adicionado!" : "Adicionar ao Carrinho"}
+                {adicionado ? "✓ Adicionado!" : semStock ? "Sem Stock Disponível" : "Adicionar ao Carrinho"}
               </button>
 
               <button

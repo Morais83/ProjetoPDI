@@ -70,6 +70,18 @@ export default function AdminEncomendas() {
     }
   };
 
+  const limparTodasEncomendas = async () => {
+    if (!confirm("Apagar TODAS as encomendas e restaurar stock? Esta ação é irreversível.")) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/limpar`, { method: 'DELETE' });
+      const dados = await res.json();
+      alert(dados.mensagem || "Encomendas apagadas e stock restaurado.");
+      carregarEncomendas();
+    } catch (err) {
+      alert("Erro ao limpar encomendas.");
+    }
+  };
+
   const encomendsFiltradas = (statusAtivo === "Todos" ? encomendas : encomendas.filter(e => e.estado === statusAtivo))
   .filter(e =>
     e.nome?.toLowerCase().includes(pesquisa.toLowerCase()) ||
@@ -81,12 +93,12 @@ export default function AdminEncomendas() {
   return (
     <AdminLayout>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 style={serif} className="text-3xl font-semibold text-[#1A2E1A]">Encomendas</h1>
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap items-center">
           {[
             { label: "Total", valor: encomendas.length, cor: "text-[#2C3A2C]" },
-            { label: "Pendentes", valor: encomendas.filter(e => e.estado === "pendente").length, cor: "text-[#A67C00]" },
+            { label: "Confirmadas", valor: encomendas.filter(e => e.estado === "confirmado").length, cor: "text-[#185FA5]" },
             { label: "Enviadas", valor: encomendas.filter(e => e.estado === "enviado").length, cor: "text-[#3D6B4A]" },
           ].map((stat) => (
             <div key={stat.label} className="bg-white border border-[#E8F0E6] rounded-lg px-4 py-2 text-center">
@@ -94,6 +106,12 @@ export default function AdminEncomendas() {
               <p className="text-[10px] text-[#8FAF8A] uppercase tracking-wide">{stat.label}</p>
             </div>
           ))}
+          <button
+            onClick={limparTodasEncomendas}
+            className="px-3 py-2 text-xs border border-[#FDECEA] text-[#C0392B] rounded-lg hover:bg-[#FDECEA] transition-colors whitespace-nowrap"
+          >
+            🗑 Limpar tudo + restaurar stock
+          </button>
         </div>
       </div>
 

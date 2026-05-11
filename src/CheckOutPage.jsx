@@ -1,38 +1,55 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 import { getCarrinho, limparCarrinho } from './cart';
 import { criarEncomenda } from './api';
 
-const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
-const sans = { fontFamily: "'Jost', sans-serif" };
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-export default function CheckoutPage() {
+const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
+const sans  = { fontFamily: "'Jost', sans-serif" };
+
+const cardElementOptions = {
+  hidePostalCode: true,
+  style: {
+    base: {
+      fontSize: '14px',
+      color: '#2C3A2C',
+      fontFamily: "'Jost', sans-serif",
+      fontSmoothing: 'antialiased',
+      '::placeholder': { color: '#A8C4A8' },
+    },
+    invalid: { color: '#C0392B', iconColor: '#C0392B' },
+  },
+};
+
+function CheckoutInner() {
+  const stripe   = useStripe();
+  const elements = useElements();
   const navigate = useNavigate();
-  const [carrinho, setCarrinho] = useState([]);
-  const [moradas, setMoradas] = useState([]);
+
+  const [carrinho, setCarrinho]                   = useState([]);
+  const [moradas, setMoradas]                     = useState([]);
   const [moradaSelecionada, setMoradaSelecionada] = useState(null);
-  const [metodoPagamento, setMetodoPagamento] = useState("mbway");
-  const [novaRua, setNovaRua] = useState("");
-  const [novaCidade, setNovaCidade] = useState("");
-  const [novoCp, setNovoCp] = useState("");
-  const [usarNovaMorada, setUsarNovaMorada] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState("");
-  const [tipoEntrega, setTipoEntrega] = useState("morada");
-  const [telefoneMbway, setTelefoneMbway] = useState("");
-  const [prefixoMbway, setPrefixoMbway] = useState("+351");
-  const [nomeCartao, setNomeCartao] = useState("");
-  const [numeroCartao, setNumeroCartao] = useState("");
-  const [validadeCartao, setValidadeCartao] = useState("");
-  const [cvvCartao, setCvvCartao] = useState("");
+  const [metodoPagamento, setMetodoPagamento]     = useState("mbway");
+  const [novaRua, setNovaRua]                     = useState("");
+  const [novaCidade, setNovaCidade]               = useState("");
+  const [novoCp, setNovoCp]                       = useState("");
+  const [usarNovaMorada, setUsarNovaMorada]       = useState(false);
+  const [loading, setLoading]                     = useState(false);
+  const [erro, setErro]                           = useState("");
+  const [tipoEntrega, setTipoEntrega]             = useState("morada");
+  const [telefoneMbway, setTelefoneMbway]         = useState("");
+  const [prefixoMbway, setPrefixoMbway]           = useState("+351");
 
   const metodosPagamentoDisponiveis = [
-    { id: "mbway", label: "MBWay" },
-    { id: "cartao", label: "Cartão de Crédito/Débito" },
-    ...(tipoEntrega === "morada" ? [{ id: "cobranca", label: "Cobrança" }] : []),
-    ...(tipoEntrega === "loja" ? [{ id: "pagamento_loja", label: "Pagamento na Loja" }] : [])
+    { id: "mbway",         label: "MBWay" },
+    { id: "cartao",        label: "Cartão de Crédito/Débito" },
+    ...(tipoEntrega === "morada" ? [{ id: "cobranca",      label: "Cobrança" }] : []),
+    ...(tipoEntrega === "loja"   ? [{ id: "pagamento_loja",label: "Pagamento na Loja" }] : []),
   ];
 
   const token = localStorage.getItem('token');
@@ -49,79 +66,106 @@ export default function CheckoutPage() {
 
   const carregarMoradas = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/utilizadores/me/moradas', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/moradas`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dados = await res.json();
-      setMoradas(dados);
-      const predefinida = dados.find(m => m.predefinida);
+      setMoradas(Array.isArray(dados) ? dados : []);
+      const predefinida = dados.find?.(m => m.predefinida);
       if (predefinida) setMoradaSelecionada(predefinida.id_morada);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // CÁLCULOS DOS TOTAIS
-  const subtotal = carrinho.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
-  const envioGratis = subtotal >= 50;
-  const portes = tipoEntrega === "loja" ? 0 : (envioGratis ? 0 : 3.99);
-  
-  // Nova lógica para a taxa de cobrança
+  const subtotal     = carrinho.reduce((acc, p) => acc + p.preco * p.quantidade, 0);
+  const envioGratis  = subtotal >= 50;
+  const portes       = tipoEntrega === "loja" ? 0 : (envioGratis ? 0 : 3.99);
   const taxaCobranca = metodoPagamento === "cobranca" ? 1.50 : 0;
-  const total = subtotal + portes + taxaCobranca;
+  const total        = subtotal + portes + taxaCobranca;
 
   const finalizarEncomenda = async () => {
     setErro("");
+
     if (tipoEntrega === "morada") {
       if (!moradaSelecionada && !usarNovaMorada) { setErro("Seleciona uma morada de entrega."); return; }
       if (usarNovaMorada && (!novaRua || !novaCidade || !novoCp)) { setErro("Preenche todos os campos da morada."); return; }
     }
     if (carrinho.length === 0) { setErro("O carrinho está vazio."); return; }
-    
+    if (metodoPagamento === "cartao" && (!stripe || !elements)) { setErro("O sistema de pagamento ainda está a carregar."); return; }
+
     setLoading(true);
 
-    setTimeout(async () => {
-      try {
-        let idMorada = moradaSelecionada;
-        if (tipoEntrega === "morada" && usarNovaMorada) {
-          const resMorada = await fetch('http://localhost:5000/api/utilizadores/me/moradas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ rua: novaRua, cidade: novaCidade, codigo_postal: novoCp, pais: 'Portugal', predefinida: false }),
-          });
-          const dadosMorada = await resMorada.json();
-          idMorada = dadosMorada.id;
-        }
-        
-        const resultado = await criarEncomenda({
-          id_morada: tipoEntrega === "loja" ? null : idMorada,
-          metodo_pagamento: metodoPagamento,
-          portes_envio: portes,
-          taxa_cobranca: taxaCobranca,
-          itens: carrinho.map(p => ({ id_variante: p.id_variante, quantidade: p.quantidade, preco: p.preco })),
+    try {
+      // Criar morada nova se necessário
+      let idMorada = moradaSelecionada;
+      if (tipoEntrega === "morada" && usarNovaMorada) {
+        const resMorada = await fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/moradas`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ rua: novaRua, cidade: novaCidade, codigo_postal: novoCp, pais: 'Portugal', predefinida: false }),
+        });
+        const dadosMorada = await resMorada.json();
+        idMorada = dadosMorada.id;
+      }
+
+      // Pagamento com cartão via Stripe
+      if (metodoPagamento === "cartao") {
+        const resPI = await fetch(`${import.meta.env.VITE_API_URL}/api/pagamentos/criar-intencao`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ total: Math.round(total * 100) }),
+        });
+        const { clientSecret, erro: erroPI } = await resPI.json();
+
+        if (erroPI) { setErro(erroPI); setLoading(false); return; }
+
+        // Obter código postal da morada selecionada ou da nova morada
+        const moradaAtual = moradas.find(m => m.id_morada === moradaSelecionada);
+        const codigoPostal = usarNovaMorada ? novoCp : (moradaAtual?.codigo_postal || "");
+
+        const resultado = await stripe.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: elements.getElement(CardElement),
+            billing_details: {
+              address: { postal_code: codigoPostal },
+            },
+          },
         });
 
-        if (resultado.erro) { 
-          setErro(resultado.erro); 
-          setLoading(false); 
-          return; 
+        if (resultado.error) {
+          setErro(resultado.error.message);
+          setLoading(false);
+          return;
         }
-        
-        limparCarrinho();
-        window.dispatchEvent(new Event('carrinho-atualizado'));
-        navigate(`/confirmacao/${resultado.id_encomenda}`);
-      } catch (err) {
-        console.error(err);
-        setErro("Erro ao processar encomenda. Tenta novamente.");
-        setLoading(false);
       }
-    }, 2500);
+
+      // Criar encomenda na base de dados
+      const resultadoEncomenda = await criarEncomenda({
+        id_morada:         tipoEntrega === "loja" ? null : idMorada,
+        metodo_pagamento:  metodoPagamento,
+        portes_envio:      portes,
+        taxa_cobranca:     taxaCobranca,
+        itens: carrinho.map(p => ({ id_variante: p.id_variante, quantidade: p.quantidade, preco: p.preco })),
+      });
+
+      if (resultadoEncomenda.erro) { setErro(resultadoEncomenda.erro); setLoading(false); return; }
+
+      limparCarrinho();
+      window.dispatchEvent(new Event('carrinho-atualizado'));
+      navigate(`/confirmacao/${resultadoEncomenda.id_encomenda}`);
+
+    } catch (err) {
+      console.error(err);
+      setErro("Erro ao processar encomenda. Tenta novamente.");
+      setLoading(false);
+    }
   };
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
       <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€  |  Nova coleção Primavera-Verão disponível ✦
+        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
       </div>
       <Navbar />
 
@@ -147,7 +191,8 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <label className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer transition-all ${tipoEntrega === "morada" ? "border-[#3D6B4A] bg-[#F0F5EE]" : "border-[#E8F0E6] hover:border-[#C8DFC4]"}`}>
                   <input type="radio" name="entrega" checked={tipoEntrega === "morada"}
-                    onChange={() => {setTipoEntrega("morada"); if (metodoPagamento === "pagamento_loja") setMetodoPagamento("mbway"); }} className="accent-[#3D6B4A]" />
+                    onChange={() => { setTipoEntrega("morada"); if (metodoPagamento === "pagamento_loja") setMetodoPagamento("mbway"); }}
+                    className="accent-[#3D6B4A]" />
                   <div>
                     <p className="text-sm font-medium text-[#2C3A2C]">🚚 Entrega em morada</p>
                     <p className="text-xs text-[#8FAF8A]">Recebe em casa</p>
@@ -155,7 +200,8 @@ export default function CheckoutPage() {
                 </label>
                 <label className={`flex items-center gap-3 border rounded-xl p-4 cursor-pointer transition-all ${tipoEntrega === "loja" ? "border-[#3D6B4A] bg-[#F0F5EE]" : "border-[#E8F0E6] hover:border-[#C8DFC4]"}`}>
                   <input type="radio" name="entrega" checked={tipoEntrega === "loja"}
-                    onChange={() => {setTipoEntrega("loja"); if (metodoPagamento === "cobranca") setMetodoPagamento("pagamento_loja"); }} className="accent-[#3D6B4A]" />
+                    onChange={() => { setTipoEntrega("loja"); if (metodoPagamento === "cobranca") setMetodoPagamento("pagamento_loja"); }}
+                    className="accent-[#3D6B4A]" />
                   <div>
                     <p className="text-sm font-medium text-[#2C3A2C]">🏪 Levantamento na loja</p>
                     <p className="text-xs text-[#8FAF8A]">Grátis · Pronto em 24h</p>
@@ -259,40 +305,13 @@ export default function CheckoutPage() {
 
               {metodoPagamento === "cartao" && (
                 <div className="border border-[#E8F0E6] rounded-xl p-4 bg-[#F7F9F5] space-y-4">
-                  <div>
-                    <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">Nome no Cartão</label>
-                    <input type="text" value={nomeCartao} onChange={e => setNomeCartao(e.target.value)}
-                      placeholder="Como aparece no cartão"
-                      className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300" />
+                  <p className="text-xs text-[#6B9E63] tracking-widest uppercase font-medium">Dados do Cartão</p>
+                  <div className="border-b border-[#C8DFC4] py-2">
+                    <CardElement options={cardElementOptions} />
                   </div>
-                  <div>
-                    <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">Número do Cartão</label>
-                    <input type="text" value={numeroCartao}
-                      onChange={e => setNumeroCartao(e.target.value.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19))}
-                      placeholder="0000 0000 0000 0000" maxLength={19}
-                      className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">Validade</label>
-                      <input type="text" value={validadeCartao}
-                        onChange={e => {
-                          let v = e.target.value.replace(/\D/g, '');
-                          if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2,4);
-                          setValidadeCartao(v);
-                        }}
-                        placeholder="MM/AA" maxLength={5}
-                        className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300" />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">CVV</label>
-                      <input type="password" value={cvvCartao}
-                        onChange={e => setCvvCartao(e.target.value.replace(/\D/g, '').slice(0, 3))}
-                        placeholder="•••" maxLength={3}
-                        className="w-full border-b border-[#C8DFC4] py-2 text-sm outline-none focus:border-[#3D6B4A] bg-transparent placeholder:text-gray-300" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#8FAF8A]">🔒 Os teus dados são encriptados e processados em segurança.</p>
+                  <p className="text-xs text-[#8FAF8A] flex items-center gap-1.5">
+                    <span>🔒</span> Pagamento processado de forma segura pela Stripe. Os teus dados nunca passam pelos nossos servidores.
+                  </p>
                 </div>
               )}
 
@@ -340,15 +359,12 @@ export default function CheckoutPage() {
                 <span className="text-[#5C6E5C]">Subtotal</span>
                 <span className="text-[#2C3A2C]">{subtotal.toFixed(2).replace('.', ',')}€</span>
               </div>
-              
               <div className="flex justify-between text-sm">
                 <span className="text-[#5C6E5C]">Portes</span>
                 <span className={portes === 0 ? "text-[#3D6B4A] font-medium" : "text-[#2C3A2C]"}>
                   {portes === 0 ? "GRÁTIS" : `${portes.toFixed(2).replace('.', ',')}€`}
                 </span>
               </div>
-
-              {/* Taxa de Cobrança */}
               {taxaCobranca > 0 && (
                 <div className="flex justify-between text-sm text-[#A67C00]">
                   <span className="flex items-center gap-1">
@@ -375,8 +391,7 @@ export default function CheckoutPage() {
 
             {erro && <p className="text-xs text-red-500 mb-4">{erro}</p>}
 
-            {/* BOTÃO ATUALIZADO */}
-            <button onClick={finalizarEncomenda} disabled={loading}
+            <button onClick={finalizarEncomenda} disabled={loading || (metodoPagamento === "cartao" && !stripe)}
               className={`w-full py-4 rounded-full text-xs tracking-widest uppercase font-medium transition-all shadow-lg flex items-center justify-center gap-2 ${loading ? "bg-[#6B9E63] text-white cursor-not-allowed opacity-80" : "bg-[#3D6B4A] text-white hover:bg-[#2C5038] shadow-green-900/10"}`}>
               {loading ? (
                 <>
@@ -409,5 +424,13 @@ export default function CheckoutPage() {
       </div>
       <Footer />
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutInner />
+    </Elements>
   );
 }
