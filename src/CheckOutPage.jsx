@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 import { getCarrinho, limparCarrinho } from './cart';
 import { criarEncomenda } from './api';
 
@@ -54,7 +54,7 @@ export default function CheckoutPage() {
 
   const carregarMoradas = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/utilizadores/me/moradas', {
+      const res = await fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/moradas', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dados = await res.json();
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
       let idMorada = levantamentoLoja ? null : moradaSelecionada;
 
       if (!levantamentoLoja && usarNovaMorada) {
-        const resMorada = await fetch('http://localhost:5000/api/utilizadores/me/moradas', {
+        const resMorada = await fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/moradas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ rua: novaRua, cidade: novaCidade, codigo_postal: novoCp, pais: 'Portugal', predefinida: false }),

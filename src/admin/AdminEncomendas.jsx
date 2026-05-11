@@ -37,7 +37,7 @@ export default function AdminEncomendas() {
   const carregarEncomendas = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/encomendas');
+      const res = await fetch('import.meta.env.VITE_API_URL/api/encomendas');
       const dados = await res.json();
       setEncomendas(dados);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function AdminEncomendas() {
 
   const abrirDetalhes = async (enc) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/encomendas/${enc.id_encomenda}`);
+      const res = await fetch(`import.meta.env.VITE_API_URL/api/encomendas/${enc.id_encomenda}`);
       const dados = await res.json();
       setEncomendaAberta(dados);
     } catch (err) {
@@ -58,7 +58,7 @@ export default function AdminEncomendas() {
 
   const atualizarEstado = async (id, novoEstado) => {
     try {
-      await fetch(`http://localhost:5000/api/encomendas/${id}/estado`, {
+      await fetch(`import.meta.env.VITE_API_URL/api/encomendas/${id}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: novoEstado }),

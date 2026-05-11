@@ -50,8 +50,8 @@ export default function AdminProdutos() {
     try {
       const [prods, cats, mars] = await Promise.all([
         getProdutos(),
-        fetch('http://localhost:5000/api/categorias').then(r => r.json()),
-        fetch('http://localhost:5000/api/marcas').then(r => r.json()),
+        fetch('import.meta.env.VITE_API_URL/api/categorias').then(r => r.json()),
+        fetch('import.meta.env.VITE_API_URL/api/marcas').then(r => r.json()),
       ]);
       setProdutos(prods);
       setCategorias(cats);
@@ -78,7 +78,7 @@ export default function AdminProdutos() {
   const abrirEditar = async (prod) => {
     setErroGuardar("");
     setProdutoEditando(prod.id_produto);
-    const res  = await fetch(`http://localhost:5000/api/produtos/${prod.id_produto}`);
+    const res  = await fetch(`import.meta.env.VITE_API_URL/api/produtos/${prod.id_produto}`);
     const dados = await res.json();
 
     const listaTamanhos = getListaTamanhos(dados.id_categoria, categorias);
@@ -176,7 +176,7 @@ export default function AdminProdutos() {
     const formData = new FormData();
     formData.append('imagem', file);
     try {
-      const res   = await fetch('http://localhost:5000/api/upload', { method: 'POST', body: formData });
+      const res   = await fetch('import.meta.env.VITE_API_URL/api/upload', { method: 'POST', body: formData });
       const dados = await res.json();
       setForm(prev => ({
         ...prev,

@@ -24,7 +24,7 @@ export default function AdminCategorias() {
   const carregarCategorias = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/categorias');
+      const res = await fetch('import.meta.env.VITE_API_URL/api/categorias');
       const dados = await res.json();
       setCategorias(dados);
     } catch (err) {
@@ -50,7 +50,7 @@ export default function AdminCategorias() {
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta categoria?")) return;
     try {
-      await fetch(`http://localhost:5000/api/categorias/${id}`, { method: 'DELETE' });
+      await fetch(`import.meta.env.VITE_API_URL/api/categorias/${id}`, { method: 'DELETE' });
       carregarCategorias();
     } catch (err) {
       console.error(err);
@@ -61,13 +61,13 @@ export default function AdminCategorias() {
     if (!form.nome_categoria) return;
     try {
       if (categoriaEditando) {
-        await fetch(`http://localhost:5000/api/categorias/${categoriaEditando}`, {
+        await fetch(`import.meta.env.VITE_API_URL/api/categorias/${categoriaEditando}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
       } else {
-        await fetch('http://localhost:5000/api/categorias', {
+        await fetch('import.meta.env.VITE_API_URL/api/categorias', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, id_categoria_pai: abaAtiva }),
