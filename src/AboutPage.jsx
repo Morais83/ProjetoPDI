@@ -2,28 +2,29 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { Sparkles, Handshake, Heart, UserCheck } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
 
 const valores = [
   {
-    icon: "✨",
+    icon: Sparkles, 
     titulo: "Qualidade",
     descricao: "Cada peça é cuidadosamente selecionada para garantir tendências atuais e os mais altos padrões de qualidade.",
   },
   {
-    icon: "🤝",
+    icon: Handshake, 
     titulo: "Confiança",
     descricao: "Construímos relações duradouras com cada cliente, baseadas na transparência, atenção ao detalhe e respeito mútuo.",
   },
   {
-    icon: "💚",
+    icon: Heart, 
     titulo: "Proximidade",
     descricao: "Valorizamos o contacto próximo com cada cliente, oferecendo um atendimento personalizado em cada interação.",
   },
   {
-    icon: "🌟",
+    icon: UserCheck, 
     titulo: "Identidade",
     descricao: "Acreditamos que a moda é uma forma de expressão e confiança — ajudamos cada cliente a encontrar o seu estilo.",
   },
@@ -47,10 +48,6 @@ export default function AboutPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
-
       <Navbar />
 
       {/* Hero */}
@@ -80,7 +77,9 @@ export default function AboutPage() {
 
       {/* História */}
       <section className="py-20 px-8 bg-white">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          
+          {/* Lado Esquerdo: Texto */}
           <div>
             <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-3">
               Como começou
@@ -91,7 +90,7 @@ export default function AboutPage() {
             >
               Uma ideia nascida da paixão pela moda e pelas pessoas
             </h2>
-            <div className="space-y-4 text-sm text-[#5C6E5C] leading-relaxed">
+            <div className="space-y-4 text-sm text-[#5C6E5C] leading-relaxed text-justify">
               <p>
                 A Moda Chique nasceu em 2023 com um objetivo simples: criar uma
                 experiência de compra online moderna, elegante e próxima de cada
@@ -115,9 +114,16 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          <div className="bg-[#E8F0E6] rounded-3xl h-80 flex items-center justify-center">
-            <span className="text-9xl">👗</span>
+
+          {/* Lado Direito: Imagem Única */}
+          <div className="hidden md:block w-full h-[450px] md:h-[450px]">
+            <img 
+              src="/hero/slide6.jpg" 
+              alt="A fundadora e a essência da marca" 
+              className="w-full h-full object-cover object-center rounded-2xl shadow-lg"
+            />
           </div>
+
         </div>
       </section>
 
@@ -155,42 +161,46 @@ export default function AboutPage() {
             </h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {valores.map((v, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-2xl border border-[#E8F0E6] p-6 text-center hover:-translate-y-1 transition-transform"
-              >
-                <span className="text-4xl mb-4 block">{v.icon}</span>
-                <h3
-                  style={serif}
-                  className="text-xl font-semibold text-[#1A2E1A] mb-3"
+            {valores.map((v, i) => {
+              const Icone = v.icon; 
+              return (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl border border-[#E8F0E6] p-8 text-center hover:-translate-y-1 transition-transform shadow-sm"
                 >
-                  {v.titulo}
-                </h3>
-                <p className="text-xs text-[#5C6E5C] leading-relaxed">
-                  {v.descricao}
-                </p>
-              </div>
-            ))}
+                  <div className="w-12 h-12 bg-[#F0F5EE] rounded-full flex items-center justify-center mx-auto mb-5 text-[#3D6B4A]">
+                    <Icone strokeWidth={1.5} size={24} />
+                  </div>
+                  
+                  <h3
+                    style={serif}
+                    className="text-xl font-semibold text-[#1A2E1A] mb-3"
+                  >
+                    {v.titulo}
+                  </h3>
+                  <p className="text-xs text-[#5C6E5C] leading-relaxed">
+                    {v.descricao}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Futuro — Loja Física */}
+      {/* Loja Física */}
       <section className="py-20 px-8 bg-white">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div className="bg-[#E8F0E6] rounded-3xl h-72 flex flex-col items-center justify-center gap-3">
-            <span className="text-7xl">🏪</span>
-            <p
-              style={serif}
-              className="text-xl font-semibold text-[#3D6B4A] tracking-wide"
-            >
-              Em breve
-            </p>
+          <div className="hidden md:block w-full h-[450px] md:h-[450px]">
+            <img 
+              src="/hero/slide7.png" 
+              alt="A fundadora e a essência da marca" 
+              className="w-full h-full object-cover object-center rounded-2xl shadow-lg"
+            />
           </div>
           <div>
             <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-3">
-              O que aí vem
+              Onde a elegância ganha vida
             </p>
             <h2
               style={serif}
@@ -198,16 +208,15 @@ export default function AboutPage() {
             >
               Uma loja física para te receber
             </h2>
-            <div className="space-y-4 text-sm text-[#5C6E5C] leading-relaxed">
+            <div className="space-y-4 text-sm text-[#5C6E5C] leading-relaxed text-justify">
               <p>
-                O futuro da Moda Chique passa também pela abertura de uma loja
-                física, permitindo aproximar ainda mais a marca dos seus clientes
-                e transformar a experiência online em algo ainda mais especial e
-                presencial.
+                Mais do que uma loja online, a Moda Chique orgulha-se de ter um espaço físico dedicado a si. 
+                Localizada em Vila Maior, a nossa loja é o refúgio perfeito para quem prefere o toque dos tecidos, 
+                o ajuste personalizado e o aconselhamento exclusivo que só o atendimento presencial pode oferecer.
               </p>
               <p>
-                Mais do que uma loja, queremos construir uma comunidade onde
-                estilo, elegância e confiança caminham lado a lado.
+                Visite-nos e descubra as nossas coleções num ambiente sofisticado e acolhedor. 
+                Queremos que cada visita seja uma experiência de confiança e estilo
               </p>
             </div>
           </div>

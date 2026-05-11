@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import { User, MapPin, Ruler, ShoppingBag, Heart, Headphones, Lock, LogOut, Mail, Phone, Package, ChevronRight, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
 
 const secoes = [
-  { id: "perfil", label: "Meu Perfil" },
-  { id: "moradas", label: "Lista de Moradas" },
-  { id: "medidas", label: "Minhas Medidas" },
-  { id: "pedidos", label: "Meus Pedidos" },
-  { id: "favoritos", label: "Lista de Favoritos" },
-  { id: "servico", label: "Serviço ao Cliente" },
+  { id: "perfil", label: "Meu Perfil", icon: User },
+  { id: "moradas", label: "Lista de Moradas", icon: MapPin },
+  { id: "medidas", label: "Minhas Medidas", icon: Ruler },
+  { id: "pedidos", label: "Meus Pedidos", icon: ShoppingBag },
+  { id: "favoritos", label: "Lista de Favoritos", icon: Heart },
+  { id: "servico", label: "Serviço ao Cliente", icon: Headphones },
 ];
 
 const statusStyles = {
@@ -68,7 +69,7 @@ function FavoritosSecao({ serif }) {
                   <div className="bg-[#F0F5EE] h-36 flex items-center justify-center overflow-hidden">
                     {prod.imagem_url
                       ? <img src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      : <span className="text-4xl text-[#C8DFC4]">📷</span>
+                      : <ShoppingBag size={40} className="text-[#C8DFC4]" />
                     }
                   </div>
                   <div className="p-3">
@@ -79,9 +80,9 @@ function FavoritosSecao({ serif }) {
               </Link>
               <button
                 onClick={() => remover(prod.id_produto)}
-                className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center border border-[#E8F0E6] hover:border-[#C0392B] transition-all text-sm"
+                className="absolute top-2 right-2 w-7 h-7 bg-white rounded-full flex items-center justify-center border border-[#E8F0E6] hover:border-[#C0392B] transition-all text-sm text-[#C0392B]"
               >
-                ❤️
+                <Heart size={14} fill="#C0392B" />
               </button>
             </div>
           ))}
@@ -343,18 +344,23 @@ export default function ProfilePage() {
               <p className="text-xs text-[#8FAF8A]">{perfil.email}</p>
             </div>
             <nav className="py-2">
-              {secoes.map(s => (
-                <button key={s.id} onClick={() => setSecaoAtiva(s.id)}
-                  className={`w-full text-left px-5 py-2.5 text-sm transition-colors ${
-                    secaoAtiva === s.id ? "text-[#3D6B4A] font-medium bg-[#F0F5EE]" : "text-[#4A5C4A] hover:text-[#3D6B4A] hover:bg-[#F7F9F5]"
-                  }`}>
-                  {s.label}
-                </button>
-              ))}
+              {secoes.map(s => {
+                const Icon = s.icon;
+                return (
+                  <button key={s.id} onClick={() => setSecaoAtiva(s.id)}
+                    className={`w-full flex items-center gap-3 text-left px-5 py-2.5 text-sm transition-colors ${
+                      secaoAtiva === s.id ? "text-[#3D6B4A] font-medium bg-[#F0F5EE]" : "text-[#4A5C4A] hover:text-[#3D6B4A] hover:bg-[#F7F9F5]"
+                    }`}>
+                    <Icon size={16} />
+                    {s.label}
+                  </button>
+                )
+              })}
             </nav>
             <div className="px-3 py-3 border-t border-[#E8F0E6]">
               <button onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('utilizador'); window.location.href = '/'; }}
-                className="w-full block text-left px-5 py-2.5 text-sm text-[#C0392B] hover:bg-[#FDECEA] rounded-lg transition-colors">
+                className="w-full flex items-center gap-3 text-left px-5 py-2.5 text-sm text-[#C0392B] hover:bg-[#FDECEA] rounded-lg transition-colors">
+                <LogOut size={16} />
                 Sair
               </button>
             </div>
@@ -368,21 +374,23 @@ export default function ProfilePage() {
           {secaoAtiva === "perfil" && (
             <>
               <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
-                <h1 style={serif} className="text-3xl font-semibold text-[#1A2E1A] mb-6">Olá, {perfil.nome.split(" ")[0]} 👋</h1>
+                <h1 style={serif} className="text-3xl font-semibold text-[#1A2E1A] mb-6">Olá, {perfil.nome.split(" ")[0]}</h1>
                 <div className="grid grid-cols-4 gap-4">
                   {[
-                    { icon: "👤", label: "Dados Pessoais", sub: "Edita o teu perfil", sec: "perfil" },
-                    { icon: "🔒", label: "Palavra-passe", sub: "Altera a senha", sec: "perfil" },
-                    { icon: "📍", label: "Moradas", sub: "Gere as tuas moradas", sec: "moradas" },
-                    { icon: "📏", label: "Medidas", sub: "Tamanhos guardados", sec: "medidas" },
-                  ].map((item, i) => (
+                    { icon: User, label: "Dados Pessoais", sub: "Edita o teu perfil", sec: "perfil" },
+                    { icon: Lock, label: "Palavra-passe", sub: "Altera a senha", sec: "perfil" },
+                    { icon: MapPin, label: "Moradas", sub: "Gere as tuas moradas", sec: "moradas" },
+                    { icon: Ruler, label: "Medidas", sub: "Tamanhos guardados", sec: "medidas" },
+                  ].map((item, i) => {
+                    const Icon = item.icon;
+                    return (
                     <button key={i} onClick={() => setSecaoAtiva(item.sec)}
                       className="flex flex-col items-center text-center p-4 rounded-xl border border-[#E8F0E6] hover:border-[#3D6B4A] hover:bg-[#F7F9F5] transition-all">
-                      <span className="text-2xl mb-2">{item.icon}</span>
+                      <Icon size={24} className="mb-2 text-[#3D6B4A]" />
                       <p className="text-xs font-medium text-[#2C3A2C]">{item.label}</p>
                       <p className="text-[10px] text-[#8FAF8A] mt-0.5">{item.sub}</p>
                     </button>
-                  ))}
+                  )})}
                 </div>
               </div>
 
@@ -450,9 +458,9 @@ export default function ProfilePage() {
                 {moradas.map(m => (
                   <div key={m.id_morada} className="border border-[#E8F0E6] rounded-xl p-5">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">📍</span>
-                        {m.predefinida ? <span className="text-[10px] bg-[#E8F0E6] text-[#3D6B4A] px-2 py-0.5 rounded-full">Principal</span> : null}
+                      <div className="flex items-center gap-2 text-[#3D6B4A]">
+                        <MapPin size={20} />
+                        {m.predefinida ? <span className="text-[10px] bg-[#E8F0E6] text-[#3D6B4A] px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Principal</span> : null}
                       </div>
                       <button onClick={() => removerMorada(m.id_morada)} className="text-xs text-[#C0392B] hover:underline">Remover</button>
                     </div>
@@ -501,9 +509,12 @@ export default function ProfilePage() {
                       onClick={() => setEncomendaAberta(enc)}
                       className="flex items-center justify-between border border-[#E8F0E6] rounded-xl p-4 hover:bg-[#F7F9F5] transition-colors cursor-pointer hover:border-[#3D6B4A]"
                     >
-                      <div>
-                        <p className="text-sm font-medium text-[#2C3A2C]">Encomenda #{String(enc.id_encomenda).padStart(4, '0')}</p>
-                        <p className="text-xs text-[#8FAF8A]">{formatData(enc.data_pedido)} · {enc.linhas?.reduce((acc, l) => acc + l.quantidade, 0)} artigo(s)</p>
+                      <div className="flex items-center gap-3">
+                        <Package size={20} className="text-[#3D6B4A]" />
+                        <div>
+                          <p className="text-sm font-medium text-[#2C3A2C]">Encomenda #{String(enc.id_encomenda).padStart(4, '0')}</p>
+                          <p className="text-xs text-[#8FAF8A]">{formatData(enc.data_pedido)} · {enc.linhas?.reduce((acc, l) => acc + l.quantidade, 0)} artigo(s)</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
@@ -512,7 +523,7 @@ export default function ProfilePage() {
                             {statusLabels[enc.estado]}
                           </span>
                         </div>
-                        <span className="text-[#C8DFC4] text-sm">→</span>
+                        <ChevronRight size={16} className="text-[#C8DFC4]" />
                       </div>
                     </div>
                   ))}
@@ -532,15 +543,17 @@ export default function ProfilePage() {
               <h2 style={serif} className="text-2xl font-semibold text-[#1A2E1A] mb-6">Serviço ao Cliente</h2>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {[
-                  { icon: "✉️", label: "Minhas Mensagens", sub: "Histórico de conversas" },
-                  { icon: "📞", label: "Contacte-nos", sub: "Segunda a Sábado, 9h-19h" },
-                ].map((item, i) => (
+                  { icon: Mail, label: "Minhas Mensagens", sub: "Histórico de conversas" },
+                  { icon: Phone, label: "Contacte-nos", sub: "Segunda a Sábado, 9h-19h" },
+                ].map((item, i) => {
+                  const Icon = item.icon;
+                  return (
                   <div key={i} className="flex flex-col items-center text-center p-6 rounded-xl border border-[#E8F0E6] hover:border-[#3D6B4A] hover:bg-[#F7F9F5] transition-all cursor-pointer">
-                    <span className="text-3xl mb-3">{item.icon}</span>
+                    <Icon size={32} className="mb-3 text-[#3D6B4A]" />
                     <p className="text-sm font-medium text-[#2C3A2C]">{item.label}</p>
                     <p className="text-xs text-[#8FAF8A] mt-1">{item.sub}</p>
                   </div>
-                ))}
+                )})}
               </div>
               <div className="border border-[#E8F0E6] rounded-xl p-5">
                 <h3 style={serif} className="text-xl font-semibold text-[#1A2E1A] mb-4">Enviar Mensagem</h3>
@@ -562,6 +575,7 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
       {/* Modal Detalhes Encomenda */}
       {encomendaAberta && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4" onClick={() => setEncomendaAberta(null)}>
@@ -575,7 +589,9 @@ export default function ProfilePage() {
                 </h2>
                 <p className="text-xs text-[#8FAF8A] mt-1">{formatData(encomendaAberta.data_pedido)}</p>
               </div>
-              <button onClick={() => setEncomendaAberta(null)} className="w-9 h-9 flex items-center justify-center rounded-full border border-[#E8F0E6] text-[#6B9E63] hover:bg-[#F0F5EE] transition-all">✕</button>
+              <button onClick={() => setEncomendaAberta(null)} className="w-9 h-9 flex items-center justify-center rounded-full border border-[#E8F0E6] text-[#6B9E63] hover:bg-[#F0F5EE] transition-all">
+                <X size={18} />
+              </button>
             </div>
 
             {/* Estado */}
@@ -599,7 +615,7 @@ export default function ProfilePage() {
                     <div className="w-12 h-12 bg-[#F0F5EE] rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {l.imagem_url
                         ? <img src={l.imagem_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-xl text-[#C8DFC4]">📦</span>
+                        : <Package size={24} className="text-[#C8DFC4]" />
                       }
                     </div>
                     <div className="flex-1">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Adicionado useNavigate
+import { Link, useNavigate } from "react-router-dom";
+import { Search, User, ShoppingBag } from "lucide-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -129,13 +130,14 @@ export default function Navbar() {
                     setPesquisaAberta(false); 
                   }
                 }}
-                className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base"
+                className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors flex items-center justify-center"
               >
-                🔍
+                {/* ÍCONE DE PESQUISA */}
+                <Search size={18} strokeWidth={1.5} />
               </button>
             </form>
 
-            <div className="flex items-center gap-3 ml-2 pl-4 border-l border-[#E2EBE0]">
+            <div className="flex items-center gap-4 ml-2 pl-4 border-l border-[#E2EBE0]">
               {utilizador ? (
                 <>
                   {utilizador.perfil === 'admin' ? (
@@ -144,11 +146,16 @@ export default function Navbar() {
                     </Link>
                   ) : (
                     <>
-                      <Link to="/perfil" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">👤</Link>
-                      <Link to="/carrinho" className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors text-base">
-                        🛍️
+                      {/* ÍCONE DE PERFIL */}
+                      <Link to="/perfil" className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+                        <User size={20} strokeWidth={1.5} />
+                      </Link>
+                      
+                      {/* ÍCONE DE CARRINHO */}
+                      <Link to="/carrinho" className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+                        <ShoppingBag size={20} strokeWidth={1.5} />
                         {numArtigos > 0 && (
-                          <span className="absolute -top-1.5 -right-1.5 bg-[#3D6B4A] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center">
+                          <span className="absolute -top-1.5 -right-2 bg-[#3D6B4A] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-medium">
                             {numArtigos}
                           </span>
                         )}
@@ -158,7 +165,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-xs tracking-widests uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
+                  <Link to="/login" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">
                     Login
                   </Link>
                   <Link to="/register" className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors border-b border-transparent hover:border-[#3D6B4A] pb-0.5">

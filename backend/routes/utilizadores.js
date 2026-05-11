@@ -85,25 +85,41 @@ router.put('/me/password', async (req, res) => {
 router.get('/me/encomendas', async (req, res) => {
   const user = getUser(req);
   if (!user) return res.status(401).json({ erro: 'Não autenticado' });
+
   try {
     const [encomendas] = await db.query(
-      'SELECT * FROM encomendas WHERE id_utilizador=? ORDER BY processado_em DESC',
+      'SELECT * FROM encomendas WHERE id_utilizador = ? ORDER BY data_pedido DESC',
       [user.id]
     );
+
     for (const enc of encomendas) {
       const [linhas] = await db.query(`
-        SELECT le.*, p.nome_produto, p.id_produto, v.tamanho, v.cor,
-              (SELECT url FROM imagens_produto WHERE id_produto = p.id_produto AND ordem = 1) AS imagem_url
+        SELECT 
+          le.*, 
+          p.nome_produto, 
+          p.id_produto, 
+          v.tamanho, 
+          v.cor,
+          (
+            SELECT url 
+            FROM imagens_produto 
+            WHERE id_produto = p.id_produto 
+            ORDER BY ordem ASC 
+            LIMIT 1
+          ) AS imagem_url
         FROM linhas_encomenda le
-        LEFT JOIN variante v ON le.id_variante = v.id_variante
-        LEFT JOIN produtos p ON v.id_produto = p.id_produto
+        INNER JOIN variante v ON le.id_variante = v.id_variante
+        INNER JOIN produtos p ON v.id_produto = p.id_produto
         WHERE le.id_encomenda = ?
       `, [enc.id_encomenda]);
+      
       enc.linhas = linhas;
     }
+
     res.json(encomendas);
   } catch (err) {
-    res.status(500).json({ erro: 'Erro ao obter encomendas' });
+    console.error("ERRO COMPLETO DO BACKEND:", err); 
+    res.status(500).json({ erro: 'Erro ao obter encomendas', detalhe: err.sqlMessage });
   }
 });
 
