@@ -60,9 +60,6 @@ export default function PromoPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
 
       <Navbar />
 

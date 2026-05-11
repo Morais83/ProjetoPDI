@@ -123,22 +123,19 @@ export default function HelpPage() {
   const [topicoAtivo, setTopicoAtivo] = useState("comprar");
   const [accordionAberto, setAccordionAberto] = useState(null);
   
-  // 1. Adicionado para ler a URL
   const location = useLocation();
 
-  // 2. NOVO EFFECT: Sincroniza a URL com o estado da página
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const topicoDaURL = params.get("topico");
 
     if (topicoDaURL) {
       setTopicoAtivo(topicoDaURL);
-      setAccordionAberto(null); // Fecha acordeões ao mudar de tema
-      window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll suave para o topo
+      setAccordionAberto(null); 
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
     }
-  }, [location]); // Executa sempre que a URL mudar
+  }, [location]); 
 
-  // Teu Effect das fontes (mantido igual)
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
@@ -150,13 +147,8 @@ export default function HelpPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      {/* 1. Barra de Aviso */}
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
 
       <Navbar />
-
       {/* 2. Banner de Título */}
       <div className="bg-[#E8F0E6] py-12 px-8 text-center">
         <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-2">Estamos aqui para ajudar</p>
@@ -165,7 +157,6 @@ export default function HelpPage() {
 
       {/* 3. CORPO DA PÁGINA */}
       <div className="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row gap-10 items-start">
-
         {/* Sidebar (O Quadrado Verde) */}
         <div className="w-full md:w-64 flex-shrink-0">
           <div className="bg-[#3D6B4A] rounded-2xl overflow-hidden shadow-lg sticky top-8">

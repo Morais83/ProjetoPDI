@@ -287,7 +287,7 @@ export default function AboutPage() {
               Ver Coleção
             </Link>
             <Link
-              to="/ajuda"
+              to="/ajuda?topico=contacto"
               onClick={() => window.scrollTo(0, 0)}
               className="border border-[#3D6B4A] text-[#3D6B4A] px-8 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-[#3D6B4A] hover:text-white transition-all"
             >

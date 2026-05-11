@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
+import { Camera } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 
@@ -209,7 +210,7 @@ export default function AdminCategorias() {
                     </div>
                   ) : (
                     <label className="flex flex-col items-center justify-center h-32 border border-dashed border-[#C8DFC4] rounded cursor-pointer hover:border-[#3D6B4A] transition-all bg-[#F0F5EE]/50 hover:bg-[#F0F5EE]">
-                      <span className="text-2xl text-[#C8DFC4] mb-1">📷</span>
+                      <Camera size={18} strokeWidth={1.5} />
                       <span className="text-[10px] text-[#8FAF8A] uppercase tracking-wider">Clica para adicionar</span>
                       <input
                         type="file"

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import { Search } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
@@ -161,9 +162,6 @@ export default function CatalogPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
       <Navbar />
 
       {/* Breadcrumb */}
@@ -261,7 +259,7 @@ export default function CatalogPage() {
           <div>
             <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
             <div className="flex items-center border border-[#C8DFC4] rounded-lg px-3 py-2 bg-white gap-2 focus-within:border-[#3D6B4A] transition-colors">
-              <span className="text-xs text-[#8FAF8A]">🔍</span>
+              <Search size={18} strokeWidth={1.5} />
               <input
                 type="text"
                 placeholder="Pesquisar por marca"

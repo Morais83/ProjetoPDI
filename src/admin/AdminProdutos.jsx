@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
 import { getProdutos, criarProduto, editarProduto, eliminarProduto } from "../api";
+import { Search } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
-
-// ─── helpers ─────────────────────────────────────────────────────────────────
 
 function getListaTamanhos(idCategoria, categorias) {
   const cat = categorias.find(c => c.id_categoria == idCategoria);
@@ -302,7 +301,7 @@ export default function AdminProdutos() {
 
       {/* Pesquisa */}
       <div className="flex items-center border border-[#C8DFC4] rounded-lg px-4 py-2.5 bg-white gap-2 mb-6 max-w-sm">
-        <span className="text-sm text-[#8FAF8A]">🔍</span>
+        <Search size={18} strokeWidth={1.5} />
         <input
           type="text"
           placeholder="Pesquisar por nome do produto"
@@ -316,21 +315,25 @@ export default function AdminProdutos() {
       {loading ? (
         <p className="text-sm text-[#8FAF8A]">A carregar produtos...</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
           {produtosFiltrados.map((prod) => (
-            <div key={prod.id_produto} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden">
-              <div className="bg-[#F0F5EE] h-32 flex items-center justify-center overflow-hidden">
+            <div key={prod.id_produto} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+              
+              <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
                 {prod.imagem_principal
-                  ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover" />
-                  : <span className="text-4xl text-[#C8DFC4]">📷</span>}
+                  ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="w-full h-full object-cover" />
+                  : <span style={serif} className="text-5xl font-semibold text-[#3D6B4A]">{prod.nome_produto.charAt(0)}</span>
+                }
               </div>
-              <div className="p-3">
-                <p className="text-sm font-medium text-[#2C3A2C] mb-1 truncate">{prod.nome_produto}</p>
+
+              <div className="p-4 flex flex-col flex-1">
+                <p className="text-sm font-bold text-[#2C3A2C] mb-1 leading-tight">{prod.nome_produto}</p>
                 <p className="text-xs text-[#8FAF8A] mb-1">{prod.nome_categoria}</p>
                 <p className="text-xs text-[#5C6E5C] mb-3">{prod.preco}€</p>
-                <div className="flex gap-3">
-                  <button onClick={() => abrirEditar(prod)} className="text-xs text-[#3D6B4A] hover:underline">Editar</button>
-                  <button onClick={() => eliminar(prod.id_produto)} className="text-xs text-[#C0392B] hover:underline">Eliminar</button>
+                
+                <div className="flex gap-4 mt-auto pt-3 border-t border-[#E8F0E6]">
+                  <button onClick={() => abrirEditar(prod)} className="text-xs text-[#3D6B4A] hover:text-[#2C5038] font-medium transition-colors">Editar</button>
+                  <button onClick={() => eliminar(prod.id_produto)} className="text-xs text-[#C0392B] hover:text-[#922B21] font-medium transition-colors">Eliminar</button>
                 </div>
               </div>
             </div>

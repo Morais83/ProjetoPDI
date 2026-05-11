@@ -104,14 +104,13 @@ export default function HomePage() {
 
         {/* Texto */}
         <div className="relative z-10 h-full flex flex-col justify-end px-16 pb-16">
-          <p className="text-white/70 text-xs tracking-[0.3em] uppercase mb-3">Nova Coleção 2026</p>
           <h1 style={serif} className="text-white text-6xl md:text-7xl font-semibold mb-6 leading-tight max-w-2xl">
             Elegância<br />que inspira.
           </h1>
           <div className="flex gap-4">
             <Link to="/catalogo" onClick={() => window.scrollTo(0, 0)}
               className="bg-white text-[#1A2E1A] px-8 py-3.5 text-xs tracking-widest uppercase hover:bg-[#F0F5EE] transition-colors">
-              Ver Coleção
+              Ver Catálogo
             </Link>
             <Link to="/promocoes" onClick={() => window.scrollTo(0, 0)}
               className="border border-white text-white px-8 py-3.5 text-xs tracking-widest uppercase hover:bg-white hover:text-[#1A2E1A] transition-all">
@@ -131,11 +130,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* Announce bar */}
-      <div className="bg-[#9AB39A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
 
       {/* Categorias Populares */}
       <section className="py-16 px-8 bg-white">

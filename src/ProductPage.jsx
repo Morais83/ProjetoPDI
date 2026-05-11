@@ -5,6 +5,7 @@ import Navbar from "./Navbar";
 import GuiaTamanhos from "./GuiaTamanhos";
 import { verificarFavorito, adicionarFavorito, removerFavorito } from './api';
 import { adicionarAoCarrinho } from './cart';
+import { Heart, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
@@ -205,9 +206,6 @@ export default function ProductPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
       <Navbar />
 
       {/* Breadcrumb */}
@@ -437,25 +435,34 @@ export default function ProductPage() {
 
               <button
                 onClick={handleWishlist}
-                className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-colors text-lg"
+                className="w-12 h-12 flex items-center justify-center border border-[#C8DFC4] rounded-full bg-white hover:border-[#3D6B4A] transition-all group"
               >
-                {wishlist ? "❤️" : "🤍"}
+                <Heart 
+                  size={20} 
+                  strokeWidth={1.5} 
+                  className={`${wishlist ? "fill-red-500 text-red-500" : "text-[#4A5C4A] group-hover:text-[#3D6B4A]"}`} 
+                />
               </button>
-            </div>
+              </div>
 
             {/* Badges */}
-            <div className="grid grid-cols-3 gap-3 mb-8 py-4 border-t border-b border-[#E8F0E6]">
+            <div className="grid grid-cols-3 gap-3 mb-8 py-6 border-t border-b border-[#E8F0E6]">
               {[
-                { icon: "🚚", text: "Envio Grátis", sub: "Acima de 50€" },
-                { icon: "↩️", text: "30 dias",      sub: "Devolução fácil" },
-                { icon: "🔒", text: "Pagamento",    sub: "100% Seguro" },
-              ].map((b, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-xl mb-1">{b.icon}</div>
-                  <div className="text-xs font-medium text-[#2C3A2C]">{b.text}</div>
-                  <div className="text-[10px] text-[#8FAF8A]">{b.sub}</div>
-                </div>
-              ))}
+                { icon: Truck, text: "Envio Grátis", sub: "Acima de 50€" },
+                { icon: RotateCcw, text: "30 dias", sub: "Devolução fácil" },
+                { icon: ShieldCheck, text: "Pagamento", sub: "100% Seguro" },
+              ].map((b, i) => {
+                const IconComponent = b.icon;
+                return (
+                  <div key={i} className="text-center flex flex-col items-center">
+                    <div className="text-[#3D6B4A] mb-2">
+                      <IconComponent size={22} strokeWidth={1.2} />
+                    </div>
+                    <div className="text-xs font-semibold text-[#2C3A2C] uppercase tracking-tight">{b.text}</div>
+                    <div className="text-[10px] text-[#8FAF8A] mt-0.5">{b.sub}</div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Accordion */}

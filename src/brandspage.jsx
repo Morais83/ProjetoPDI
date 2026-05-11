@@ -1,33 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import { Search } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
 
-// A tua lista de marcas estáticas (mantém as cores e emojis)
-const marcas = [
-  { id: "zara", nome: "Zara", emoji: "👗", descricao: "Moda contemporânea para o dia a dia", bg: "bg-[#F0F5EE]" },
-  { id: "mango", nome: "Mango", emoji: "🧥", descricao: "Elegância mediterrânea e sofisticação", bg: "bg-[#F5F0EE]" },
-  { id: "hm", nome: "H&M", emoji: "👚", descricao: "Moda acessível e sustentável", bg: "bg-[#EEF5EC]" },
-  { id: "massimo", nome: "Massimo Dutti", emoji: "🧣", descricao: "Elegância clássica e atemporal", bg: "bg-[#F0F5EE]" },
-  { id: "stradivarius", nome: "Stradivarius", emoji: "👜", descricao: "Tendências jovens e urbanas", bg: "bg-[#F5F0EE]" },
-  { id: "bershka", nome: "Bershka", emoji: "👕", descricao: "Estilo urbano e descontraído", bg: "bg-[#EEF5EC]" },
-  { id: "pullandbear", nome: "Pull&Bear", emoji: "🧤", descricao: "Moda casual e confortável", bg: "bg-[#F0F5EE]" },
-  { id: "levis", nome: "Levi's", emoji: "👖", descricao: "O clássico do denim americano", bg: "bg-[#F5F0EE]" },
-  { id: "nike", nome: "Nike", emoji: "👟", descricao: "Desempenho e estilo desportivo", bg: "bg-[#EEF5EC]" },
-  { id: "guess", nome: "Guess", emoji: "💍", descricao: "Glamour e sensualidade americana", bg: "bg-[#F0F5EE]" },
-  { id: "tommy", nome: "Tommy Hilfiger", emoji: "⚓", descricao: "Preppy americano com toque europeu", bg: "bg-[#F5F0EE]" },
-  { id: "modachique", nome: "Moda Chique", emoji: "🌿", descricao: "A nossa marca exclusiva", bg: "bg-[#E8F0E6]" },
-];
-
 export default function BrandsPage() {
   const [marcaAtiva, setMarcaAtiva] = useState(null);
   const [pesquisa, setPesquisa] = useState("");
-  
-  // NOVOS ESTADOS: Para guardar os produtos reais da base de dados
-  const [produtosDb, setProdutosDb] = useState([]);
+  const [marcas, setMarcas] = useState([]);
+  const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,43 +19,40 @@ export default function BrandsPage() {
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
     link.rel = "stylesheet";
     document.head.appendChild(link);
-    
-    // IR BUSCAR OS PRODUTOS À BASE DE DADOS
-    const fetchProdutos = async () => {
+
+    const carregarDados = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`);
-        const data = await res.json();
-        setProdutosDb(data);
+        const [resMarcas, resProdutos] = await Promise.all([
+          fetch('http://localhost:5000/api/marcas'),
+          fetch('http://localhost:5000/api/produtos'),
+        ]);
+        const dadosMarcas = await resMarcas.json();
+        const dadosProdutos = await resProdutos.json();
+        setMarcas(dadosMarcas);
+        setProdutos(dadosProdutos);
       } catch (err) {
-        console.error("Erro ao buscar produtos:", err);
-      } finally {
-        setLoading(false);
+        console.error(err);
       }
+      setLoading(false);
     };
-    fetchProdutos();
+
+    carregarDados();
   }, []);
 
-  const marcasFiltradas = marcas.filter((m) =>
-    m.nome.toLowerCase().includes(pesquisa.toLowerCase())
+  const marcasFiltradas = marcas.filter(m =>
+    m.nome_marca.toLowerCase().includes(pesquisa.toLowerCase())
   );
 
-  const marcaSelecionada = marcas.find((m) => m.id === marcaAtiva);
-  
-  // FILTRAR OS PRODUTOS REAIS PELA MARCA SELECIONADA
-  const produtosDaMarca = marcaSelecionada 
-    ? produtosDb.filter((p) => p.nome_marca === marcaSelecionada.nome)
+  const marcaSelecionada = marcas.find(m => m.id_marca === marcaAtiva);
+  const produtosDaMarca = marcaSelecionada
+    ? produtos.filter(p => p.nome_marca === marcaSelecionada.nome_marca)
     : [];
 
-  // Função para contar quantos produtos cada marca tem na base de dados
-  const contarProdutos = (nomeMarca) => {
-    return produtosDb.filter((p) => p.nome_marca === nomeMarca).length;
-  };
+  const contarProdutos = (nomeMarca) =>
+    produtos.filter(p => p.nome_marca === nomeMarca).length;
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
 
       <Navbar />
 
@@ -84,7 +65,7 @@ export default function BrandsPage() {
             <>
               <button onClick={() => setMarcaAtiva(null)} className="hover:text-[#3D6B4A] transition-colors">Marcas</button>
               <span>/</span>
-              <span className="text-[#3D6B4A]">{marcaSelecionada?.nome}</span>
+              <span className="text-[#3D6B4A]">{marcaSelecionada?.nome_marca}</span>
             </>
           ) : (
             <span className="text-[#3D6B4A]">Marcas</span>
@@ -92,7 +73,6 @@ export default function BrandsPage() {
         </div>
       </div>
 
-      {/* Vista de Marcas (Lista Geral) */}
       {!marcaAtiva ? (
         <>
           {/* Banner */}
@@ -105,34 +85,36 @@ export default function BrandsPage() {
           <div className="max-w-7xl mx-auto px-8 pb-16">
             {/* Pesquisa */}
             <div className="flex items-center border border-[#C8DFC4] rounded-xl px-4 py-3 bg-white gap-2 mb-8 max-w-sm">
-              <span className="text-sm text-[#8FAF8A]">🔍</span>
+              <Search size={18} strokeWidth={1.5} />
               <input
                 type="text"
                 placeholder="Pesquisar marca..."
                 value={pesquisa}
-                onChange={(e) => setPesquisa(e.target.value)}
+                onChange={e => setPesquisa(e.target.value)}
                 className="text-sm outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full"
               />
             </div>
 
-            {/* Grid de Marcas */}
             {loading ? (
               <p className="text-sm text-[#8FAF8A]">A carregar marcas...</p>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {marcasFiltradas.map((marca) => (
+                {marcasFiltradas.map(marca => (
                   <button
-                    key={marca.id}
-                    onClick={() => { setMarcaAtiva(marca.id); window.scrollTo(0, 0); }}
+                    key={marca.id_marca}
+                    onClick={() => { setMarcaAtiva(marca.id_marca); window.scrollTo(0, 0); }}
                     className="bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden hover:shadow-lg hover:shadow-green-100 hover:-translate-y-1 transition-all group text-left flex flex-col"
                   >
-                    <div className={`${marca.bg} h-40 w-full flex items-center justify-center text-6xl group-hover:scale-105 transition-transform`}>
-                      {marca.emoji}
+                    <div className="bg-[#F0F5EE] h-40 w-full flex items-center justify-center p-4 overflow-hidden">
+                      {marca.imagem_url
+                        ? <img src={marca.imagem_url} alt={marca.nome_marca} className="h-full w-full object-contain group-hover:scale-105 transition-transform" />
+                        : <span style={serif} className="text-4xl font-semibold text-[#3D6B4A]">{marca.nome_marca.charAt(0)}</span>
+                      }
                     </div>
                     <div className="p-4 w-full">
                       <div className="flex items-center justify-between mb-1">
-                        <h3 style={serif} className="text-xl font-semibold text-[#1A2E1A]">{marca.nome}</h3>
-                        <span className="text-xs text-[#8FAF8A]">{contarProdutos(marca.nome)} produtos</span>
+                        <h3 style={serif} className="text-xl font-semibold text-[#1A2E1A]">{marca.nome_marca}</h3>
+                        <span className="text-xs text-[#8FAF8A]">{contarProdutos(marca.nome_marca)} produtos</span>
                       </div>
                       <p className="text-xs text-[#5C6E5C]">{marca.descricao}</p>
                       <p className="text-xs text-[#3D6B4A] mt-3 font-medium group-hover:underline">Ver produtos →</p>
@@ -151,17 +133,19 @@ export default function BrandsPage() {
           </div>
         </>
       ) : (
-        /* Vista de Produtos da Marca (Específica) */
         <>
           {/* Banner da Marca */}
-          <div className={`${marcaSelecionada?.bg} py-12 px-8 mb-8`}>
+          <div className="bg-[#E8F0E6] py-12 px-8 mb-8">
             <div className="max-w-7xl mx-auto flex items-center gap-8">
-              <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center text-5xl shadow-sm border border-[#E8F0E6]">
-                {marcaSelecionada?.emoji}
+              <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-[#E8F0E6] overflow-hidden p-2">
+                {marcaSelecionada?.imagem_url
+                  ? <img src={marcaSelecionada.imagem_url} alt={marcaSelecionada.nome_marca} className="w-full h-full object-contain" />
+                  : <span style={serif} className="text-3xl font-semibold text-[#3D6B4A]">{marcaSelecionada?.nome_marca.charAt(0)}</span>
+                }
               </div>
               <div>
                 <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-1">Marca</p>
-                <h1 style={serif} className="text-4xl font-semibold text-[#1A2E1A] mb-1">{marcaSelecionada?.nome}</h1>
+                <h1 style={serif} className="text-4xl font-semibold text-[#1A2E1A] mb-1">{marcaSelecionada?.nome_marca}</h1>
                 <p className="text-sm text-[#5C6E5C]">{marcaSelecionada?.descricao} · {produtosDaMarca.length} produtos</p>
               </div>
               <button
@@ -177,17 +161,11 @@ export default function BrandsPage() {
             {produtosDaMarca.length > 0 ? (
               <>
                 <p className="text-xs text-[#8FAF8A] mb-6">
-                  {marcaSelecionada?.nome} / <span className="text-[#3D6B4A]">{produtosDaMarca.length} produtos</span>
+                  {marcaSelecionada?.nome_marca} / <span className="text-[#3D6B4A]">{produtosDaMarca.length} produtos</span>
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {/* MAPEAR OS PRODUTOS REAIS */}
-                  {produtosDaMarca.map((prod) => (
-                    <Link
-                      to={`/produto/${prod.id_produto}`}
-                      key={prod.id_produto}
-                      className="block"
-                      onClick={() => window.scrollTo(0, 0)}
-                    >
+                  {produtosDaMarca.map(prod => (
+                    <Link to={`/produto/${prod.id_produto}`} key={prod.id_produto} className="block" onClick={() => window.scrollTo(0, 0)}>
                       <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
                         <div className="bg-[#F0F5EE] h-64 flex items-center justify-center overflow-hidden">
                           {prod.imagem_principal
