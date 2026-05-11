@@ -19,7 +19,7 @@ export default function AdminMarcas() {
   const carregarMarcas = async () => {
     setLoading(true);
     try {
-      const res = await fetch('import.meta.env.VITE_API_URL/api/marcas');
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/marcas`);
       const dados = await res.json();
       setMarcas(dados);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function AdminMarcas() {
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta marca?")) return;
     try {
-      await fetch(`import.meta.env.VITE_API_URL/api/marcas/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/marcas/${id}`, { method: 'DELETE' });
       carregarMarcas();
     } catch (err) {
       console.error(err);
@@ -59,13 +59,13 @@ export default function AdminMarcas() {
     if (!form.nome_marca) return;
     try {
       if (marcaEditando) {
-        await fetch(`import.meta.env.VITE_API_URL/api/marcas/${marcaEditando}`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/marcas/${marcaEditando}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
       } else {
-        await fetch('import.meta.env.VITE_API_URL/api/marcas', {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/marcas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
@@ -83,7 +83,7 @@ export default function AdminMarcas() {
     try {
       const formData = new FormData();
       formData.append('imagem', file);
-      const res = await fetch('import.meta.env.VITE_API_URL/api/upload', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
       });

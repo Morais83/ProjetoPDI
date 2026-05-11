@@ -53,11 +53,11 @@ export default function ProductPage() {
     setVarianteSelecionada(null);
     setImagemAtiva(0);
     try {
-      const res    = await fetch(`import.meta.env.VITE_API_URL/api/produtos/${id}`);
+      const res    = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos/${id}`);
       const dados  = await res.json();
       setProduto(dados);
 
-      const resRel = await fetch(`import.meta.env.VITE_API_URL/api/produtos`);
+      const resRel = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`);
       const todos  = await resRel.json();
       setProdutosRelacionados(
         todos.filter(p => p.id_categoria === dados.id_categoria && p.id_produto !== dados.id_produto).slice(0, 4)

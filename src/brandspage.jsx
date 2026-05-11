@@ -39,7 +39,7 @@ export default function BrandsPage() {
     // IR BUSCAR OS PRODUTOS À BASE DE DADOS
     const fetchProdutos = async () => {
       try {
-        const res = await fetch('import.meta.env.VITE_API_URL/api/produtos');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/produtos`);
         const data = await res.json();
         setProdutosDb(data);
       } catch (err) {

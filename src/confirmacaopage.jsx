@@ -17,7 +17,7 @@ export default function ConfirmacaoPage() {
     document.head.appendChild(link);
 
     const token = localStorage.getItem('token');
-    fetch(`import.meta.env.VITE_API_URL/api/encomendas/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/${id}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(r => r.json())

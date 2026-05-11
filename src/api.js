@@ -1,4 +1,4 @@
-const BASE_URL = 'import.meta.env.VITE_API_URL/api';
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
 export const registar = async (dados) => {
   const res = await fetch(`${BASE_URL}/auth/registo`, {
@@ -120,7 +120,7 @@ export const criarEncomenda = async (dados) => {
 // ————— RECUPERAR PASSWORD —————
 export const pedirRecuperacao = async (email) => {
     try {
-        const response = await fetch('import.meta.env.VITE_API_URL/api/auth/esqueci-senha', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/esqueci-senha`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email })
@@ -135,7 +135,7 @@ export const pedirRecuperacao = async (email) => {
 // ————— REPOR PASSWORD —————
 export const reporSenha = async (token, novaPassword) => {
     try {
-        const response = await fetch(`import.meta.env.VITE_API_URL/api/auth/repor-senha`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/repor-senha`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token, novaPassword })

@@ -54,7 +54,7 @@ export default function CheckoutPage() {
 
   const carregarMoradas = async () => {
     try {
-      const res = await fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/moradas', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/moradas`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const dados = await res.json();
@@ -97,7 +97,7 @@ export default function CheckoutPage() {
       let idMorada = levantamentoLoja ? null : moradaSelecionada;
 
       if (!levantamentoLoja && usarNovaMorada) {
-        const resMorada = await fetch('import.meta.env.VITE_API_URL/api/utilizadores/me/moradas', {
+        const resMorada = await fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/moradas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ rua: novaRua, cidade: novaCidade, codigo_postal: novoCp, pais: 'Portugal', predefinida: false }),
