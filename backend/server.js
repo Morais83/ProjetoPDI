@@ -16,6 +16,8 @@ app.use('/api/encomendas', require('./routes/encomendas'));
 app.use('/api/utilizadores', require('./routes/utilizadores'));
 app.use('/api/favoritos', require('./routes/favoritos'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/pagamentos', require('./routes/pagamentos'));
+app.use('/api/suporte', require('./routes/suporte'));
 
 app.get('/api/teste', async (req, res) => {
   try {
@@ -74,6 +76,31 @@ async function runMigrations() {
       await db.query('ALTER TABLE imagens_produto ADD UNIQUE KEY imagem_unica (id_produto, ordem, cor)');
       console.log('Migração: imagem_unica actualizada para (id_produto, ordem, cor)');
     }
+    // 4. Tabela mensagens_suporte
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS mensagens_suporte (
+        id_mensagem    INT AUTO_INCREMENT PRIMARY KEY,
+        id_utilizador  INT NOT NULL,
+        assunto        VARCHAR(255) NOT NULL,
+        mensagem       TEXT NOT NULL,
+        estado         ENUM('aberta','respondida','fechada') DEFAULT 'aberta',
+        lida_admin     BOOLEAN DEFAULT FALSE,
+        lida_cliente   BOOLEAN DEFAULT TRUE,
+        criado_em      DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (id_utilizador) REFERENCES utilizadores(id_utilizador) ON DELETE CASCADE
+      )
+    `);
+    // 5. Tabela respostas_suporte
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS respostas_suporte (
+        id_resposta   INT AUTO_INCREMENT PRIMARY KEY,
+        id_mensagem   INT NOT NULL,
+        mensagem      TEXT NOT NULL,
+        is_admin      BOOLEAN DEFAULT FALSE,
+        criado_em     DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (id_mensagem) REFERENCES mensagens_suporte(id_mensagem) ON DELETE CASCADE
+      )
+    `);
     console.log('Migrações de BD concluídas.');
   } catch (err) {
     console.error('Erro nas migrações:', err.message);

@@ -10,6 +10,7 @@ export default function AdminLayout({ children }) {
     { label: "Produtos", path: "/admin/produtos" },
     { label: "Encomendas", path: "/admin/encomendas" },
     { label: "Utilizadores", path: "/admin/utilizadores" },
+    { label: "Suporte", path: "/admin/suporte" },
   ];
 
   return (
