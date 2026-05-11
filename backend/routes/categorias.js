@@ -11,28 +11,35 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Apenas UMA rota POST (com imagem)
 router.post('/', async (req, res) => {
-  const { nome_categoria, descricao, id_categoria_pai } = req.body;
+  const { nome_categoria, descricao, id_categoria_pai, imagem } = req.body;
+
   try {
     const [resultado] = await db.query(
-      'INSERT INTO categorias (nome_categoria, descricao, id_categoria_pai) VALUES (?, ?, ?)',
-      [nome_categoria, descricao || null, id_categoria_pai || null]
+      'INSERT INTO categorias (nome_categoria, descricao, id_categoria_pai, imagem) VALUES (?, ?, ?, ?)',
+      [nome_categoria, descricao || null, id_categoria_pai || null, imagem || null]
     );
-    res.status(201).json({ mensagem: 'Categoria criada!', id: resultado.insertId });
-  } catch (err) {
+    res.status(201).json({ id: resultado.insertId, mensagem: 'Categoria criada com sucesso' });
+  } catch (erro) {
+    console.error(erro);
     res.status(500).json({ erro: 'Erro ao criar categoria' });
   }
 });
 
+// Apenas UMA rota PUT (com imagem)
 router.put('/:id', async (req, res) => {
-  const { nome_categoria, descricao } = req.body;
+  const { nome_categoria, descricao, imagem } = req.body;
+  const { id } = req.params;
+
   try {
     await db.query(
-      'UPDATE categorias SET nome_categoria=?, descricao=? WHERE id_categoria=?',
-      [nome_categoria, descricao || null, req.params.id]
+      'UPDATE categorias SET nome_categoria = ?, descricao = ?, imagem = ? WHERE id_categoria = ?',
+      [nome_categoria, descricao || null, imagem || null, id]
     );
-    res.json({ mensagem: 'Categoria atualizada!' });
-  } catch (err) {
+    res.json({ mensagem: 'Categoria atualizada com sucesso' });
+  } catch (erro) {
+    console.error(erro);
     res.status(500).json({ erro: 'Erro ao atualizar categoria' });
   }
 });

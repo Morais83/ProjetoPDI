@@ -14,7 +14,7 @@ export default function AdminCategorias() {
   const [abaAtiva, setAbaAtiva] = useState(1);
   const [modalAberto, setModalAberto] = useState(false);
   const [categoriaEditando, setCategoriaEditando] = useState(null);
-  const [form, setForm] = useState({ nome_categoria: "", descricao: "" });
+  const [form, setForm] = useState({ nome_categoria: "", descricao: "", imagem: "" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,13 +37,17 @@ export default function AdminCategorias() {
 
   const abrirAdicionar = () => {
     setCategoriaEditando(null);
-    setForm({ nome_categoria: "", descricao: "" });
+    setForm({ nome_categoria: "", descricao: "", imagem: "" });
     setModalAberto(true);
   };
 
   const abrirEditar = (cat) => {
     setCategoriaEditando(cat.id_categoria);
-    setForm({ nome_categoria: cat.nome_categoria, descricao: cat.descricao || "" });
+    setForm({ 
+      nome_categoria: cat.nome_categoria, 
+      descricao: cat.descricao || "",
+      imagem: cat.imagem || "" 
+    });
     setModalAberto(true);
   };
 
@@ -55,6 +59,32 @@ export default function AdminCategorias() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // ── Função de Upload para o Cloudinary ──
+  const handleUploadImagem = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('imagem', file);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, { 
+        method: 'POST', 
+        body: formData 
+      });
+      const dados = await res.json();
+      if (dados.url) {
+        setForm(prev => ({ ...prev, imagem: dados.url }));
+      }
+    } catch (err) {
+      console.error("Erro ao fazer upload:", err);
+    }
+  };
+
+  const removerImagem = () => {
+    setForm(prev => ({ ...prev, imagem: "" }));
   };
 
   const guardar = async () => {
@@ -114,27 +144,34 @@ export default function AdminCategorias() {
       {loading ? (
         <p className="text-sm text-[#8FAF8A]">A carregar categorias...</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
           {subcategorias.map((cat) => (
-            <div key={cat.id_categoria} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden">
-              <div className="bg-[#F0F5EE] h-24 flex items-center justify-center">
-                <span style={serif} className="text-2xl font-semibold text-[#3D6B4A]">
-                  {cat.nome_categoria.charAt(0)}
-                </span>
+            <div key={cat.id_categoria} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+              
+              <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
+                {cat.imagem ? (
+                  <img src={cat.imagem} alt={cat.nome_categoria} className="w-full h-full object-contain" />
+                ) : (
+                  <span style={serif} className="text-5xl font-semibold text-[#3D6B4A]">
+                    {cat.nome_categoria.charAt(0)}
+                  </span>
+                )}
               </div>
-              <div className="p-3">
-                <p className="text-sm font-medium text-[#2C3A2C] mb-1">{cat.nome_categoria}</p>
-                {cat.descricao && <p className="text-xs text-[#8FAF8A] mb-2 truncate">{cat.descricao}</p>}
-                <div className="flex gap-3 mt-2">
-                  <button onClick={() => abrirEditar(cat)} className="text-xs text-[#3D6B4A] hover:underline">Editar</button>
-                  <button onClick={() => eliminar(cat.id_categoria)} className="text-xs text-[#C0392B] hover:underline">Eliminar</button>
+              
+              <div className="p-4 flex flex-col flex-1">
+                <p className="text-sm font-bold text-[#2C3A2C] mb-1 leading-tight">{cat.nome_categoria}</p>
+                {cat.descricao && <p className="text-xs text-[#8FAF8A] mb-3 line-clamp-2 leading-relaxed">{cat.descricao}</p>}
+                
+                <div className="flex gap-4 mt-auto pt-3 border-t border-[#E8F0E6]">
+                  <button onClick={() => abrirEditar(cat)} className="text-xs text-[#3D6B4A] hover:text-[#2C5038] font-medium transition-colors">Editar</button>
+                  <button onClick={() => eliminar(cat.id_categoria)} className="text-xs text-[#C0392B] hover:text-[#922B21] font-medium transition-colors">Eliminar</button>
                 </div>
               </div>
             </div>
           ))}
 
           {subcategorias.length === 0 && (
-            <div className="col-span-4 text-center py-12">
+            <div className="col-span-full text-center py-12">
               <p style={serif} className="text-2xl text-[#C8DFC4] mb-2">Nenhuma subcategoria encontrada</p>
               <p className="text-sm text-[#8FAF8A]">Clica em "+ Adicionar Categoria" para criar uma.</p>
             </div>
@@ -152,7 +189,40 @@ export default function AdminCategorias() {
             <p className="text-xs text-[#8FAF8A] mb-6">
               {categoriaEditando ? "" : `A adicionar em: ${categoriasPrincipais.find(c => c.id === abaAtiva)?.nome}`}
             </p>
+            
             <div className="space-y-4">
+              
+              {/* Upload da Imagem */}
+              <div>
+                <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-2">Imagem (Opcional)</label>
+                <div className="border border-[#E8F0E6] rounded-lg p-2">
+                  {form.imagem ? (
+                    <div className="relative">
+                      <img src={form.imagem} alt="Preview" className="w-full h-32 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={removerImagem}
+                        className="absolute top-2 right-2 w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-[#C0392B] text-xs hover:bg-white hover:scale-110 transition-all shadow-sm"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center h-32 border border-dashed border-[#C8DFC4] rounded cursor-pointer hover:border-[#3D6B4A] transition-all bg-[#F0F5EE]/50 hover:bg-[#F0F5EE]">
+                      <span className="text-2xl text-[#C8DFC4] mb-1">📷</span>
+                      <span className="text-[10px] text-[#8FAF8A] uppercase tracking-wider">Clica para adicionar</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleUploadImagem}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Nome */}
               <div>
                 <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">Nome</label>
                 <input
@@ -163,6 +233,8 @@ export default function AdminCategorias() {
                   placeholder="Nome da categoria"
                 />
               </div>
+              
+              {/* Descrição */}
               <div>
                 <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-1">Descrição</label>
                 <input
@@ -173,7 +245,9 @@ export default function AdminCategorias() {
                   placeholder="Descrição (opcional)"
                 />
               </div>
+
             </div>
+
             <div className="flex gap-3 mt-8">
               <button onClick={() => setModalAberto(false)} className="flex-1 py-3 rounded-full border border-[#C8DFC4] text-sm text-[#5C6E5C] hover:bg-[#F0F5EE] transition-all">
                 Cancelar

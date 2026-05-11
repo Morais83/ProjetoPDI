@@ -100,7 +100,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-[#2C4A2C] flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-sm text-[#A8C4A8]">© 2026 Moda Chique Lili Store. Todos os direitos reservados.</p>
         <div className="flex gap-2">
-          {["PayPal", "MBWay", "Visa", "Mastercard", "Cobrança"].map((p) => (
+          {["MBWay", "Visa", "Mastercard", "Cobrança"].map((p) => (
             <span key={p} className="bg-[#1A2E1A] border border-[#3D6B4A] px-3 py-1 rounded-md text-sm text-[#A8C4A8]">{p}</span>
           ))}
         </div>
