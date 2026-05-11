@@ -13,12 +13,12 @@ export default function Footer() {
   ];
 
   const ajudaLinks = [
-    { label: "Como Comprar", path: "/ajuda" },
-    { label: "Envios", path: "/ajuda" },
-    { label: "Devoluções", path: "/ajuda" },
-    { label: "FAQ", path: "/ajuda" },
-    { label: "Contacto", path: "/ajuda" },
-  ];
+  { label: "Como Comprar", path: "/ajuda?topico=comprar" },
+  { label: "Envios", path: "/ajuda?topico=envios" },
+  { label: "Devoluções", path: "/ajuda?topico=devolucoes" },
+  { label: "FAQ", path: "/ajuda?topico=faq" },
+  { label: "Contacto", path: "/ajuda?topico=contacto" },
+];
 
   const empresaLinks = [
     { label: "Sobre Nós", path: "/sobre-nos", externo: false },
@@ -27,7 +27,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer style={sans} className="bg-[#1A2E1A] text-[#C8DFC4] py-12 px-8">
+    <footer style={sans} className="bg-[#203020] text-[#C8DFC4] py-12 px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
 
         {/* Marca */}

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
-import GuiaTamanhos from "./guiatamanhos";
+import GuiaTamanhos from "./GuiaTamanhos";
 import { verificarFavorito, adicionarFavorito, removerFavorito } from './api';
 import { adicionarAoCarrinho } from './cart';
 

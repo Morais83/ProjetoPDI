@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AdminLayout from "./adminlayout";
+import AdminLayout from "./AdminLayout";
 import { getProdutos, criarProduto, editarProduto, eliminarProduto } from "../api";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
