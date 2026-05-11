@@ -22,8 +22,8 @@ export default function Footer() {
 
   const empresaLinks = [
     { label: "Sobre Nós", path: "/sobre-nos", externo: false },
-    { label: "Termos e Condições Gerais", path: "/termoscondiçoes.pdf", externo: true },
-    { label: "Política de Privacidade", path: "/politicaprivacidade.pdf", externo: true },
+    { label: "Termos e Condições Gerais", path: "/Termos_Condicoes_ModaChique.pdf", externo: true },
+    { label: "Política de Privacidade", path: "/Politica_Privacidade_ModaChique.pdf", externo: true },
   ];
 
   return (
@@ -83,12 +83,12 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <a href="/termoscondiçoes.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
+              <a href="/Termos_Condicoes_ModaChique.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
                 Termos e Condições Gerais
               </a>
             </li>
             <li>
-              <a href="/politicaprivacidade.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
+              <a href="/Politica_Privacidade_ModaChique.pdf" target="_blank" rel="noopener noreferrer" className="text-sm text-[#A8C4A8] hover:text-white transition-colors">
                 Política de Privacidade
               </a>
             </li>
