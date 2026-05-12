@@ -139,7 +139,7 @@ export default function AdminMarcas() {
               
               <div className="bg-[#F0F5EE] h-48 flex items-center justify-center relative p-6 shrink-0">
                 {m.imagem_url ? (
-                  <img src={m.imagem_url} alt={m.nome_marca} className="w-full h-full object-contain" />
+                  <img loading="lazy" src={m.imagem_url} alt={m.nome_marca} className="w-full h-full object-contain" />
                 ) : (
                   <span style={serif} className="text-5xl font-semibold text-[#3D6B4A]">
                     {m.nome_marca.charAt(0)}
@@ -183,7 +183,7 @@ export default function AdminMarcas() {
                 <div className="border border-[#E8F0E6] rounded-lg p-2">
                   {form.imagem_url ? (
                     <div className="relative">
-                      <img src={form.imagem_url} alt="Preview" className="w-full h-32 object-contain rounded bg-[#F0F5EE]/30" />
+                      <img loading="lazy" src={form.imagem_url} alt="Preview" className="w-full h-32 object-contain rounded bg-[#F0F5EE]/30" />
                       <button
                         type="button"
                         onClick={() => setForm({ ...form, imagem_url: "" })}

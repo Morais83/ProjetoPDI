@@ -39,11 +39,8 @@ const numeros = [
 
 export default function AboutPage() {
   useEffect(() => {
-    const link = document.createElement("link");
     link.href =
       "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
   }, []);
 
   return (
@@ -117,7 +114,7 @@ export default function AboutPage() {
 
           {/* Lado Direito: Imagem Única */}
           <div className="hidden md:block w-full h-[450px] md:h-[450px]">
-            <img 
+            <img loading="lazy" 
               src="/hero/slide6.jpg" 
               alt="A fundadora e a essência da marca" 
               className="w-full h-full object-cover object-center rounded-2xl shadow-lg"
@@ -192,7 +189,7 @@ export default function AboutPage() {
       <section className="py-20 px-8 bg-white">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div className="hidden md:block w-full h-[450px] md:h-[450px]">
-            <img 
+            <img loading="lazy" 
               src="/hero/slide7.png" 
               alt="A fundadora e a essência da marca" 
               className="w-full h-full object-cover object-center rounded-2xl shadow-lg"

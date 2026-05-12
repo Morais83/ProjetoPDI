@@ -33,13 +33,6 @@ export default function ProductPage() {
 
   if (!id) return null;
 
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-  }, []);
-
   useEffect(() => { carregarProduto(); }, [id]);
 
   useEffect(() => {
@@ -260,7 +253,7 @@ export default function ProductPage() {
                     imagemAtiva === i ? "border-[#3D6B4A]" : "border-[#E8F0E6] hover:border-[#C8DFC4]"
                   }`}
                 >
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  <img loading="lazy" src={img.url} alt="" className="w-full h-full object-cover" />
                 </div>
               )) : (
                 <div className="w-16 h-20 rounded-xl border-2 border-[#3D6B4A] bg-white flex items-center justify-center text-2xl text-[#C8DFC4]">📷</div>
@@ -275,7 +268,7 @@ export default function ProductPage() {
               >
                 {imagensDaCor.length > 0 ? (
                   <>
-                    <img
+                    <img loading="lazy"
                       key={`${corSelecionada}-${imagemAtiva}`}
                       src={imagensDaCor[imagemAtiva]?.url}
                       alt={produto.nome_produto}
@@ -523,7 +516,7 @@ export default function ProductPage() {
                   <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
                     <div className="bg-[#F0F5EE] h-52 flex items-center justify-center overflow-hidden">
                       {prod.imagem_principal
-                        ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                        ? <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
                         : <span className="text-4xl text-[#C8DFC4]">📷</span>}
                     </div>
                     <div className="p-4">
@@ -548,7 +541,7 @@ export default function ProductPage() {
           onClick={() => setLightboxAberto(false)}
         >
           <div className="relative max-w-4xl max-h-[90vh] w-full mx-8" onClick={e => e.stopPropagation()}>
-            <img
+            <img loading="lazy"
               key={`lb-${corSelecionada}-${imagemAtiva}`}
               src={imagensDaCor[imagemAtiva]?.url}
               alt={produto.nome_produto}
@@ -580,7 +573,7 @@ export default function ProductPage() {
                     imagemAtiva === i ? "border-white" : "border-white/30 hover:border-white/60"
                   }`}
                 >
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  <img loading="lazy" src={img.url} alt="" className="w-full h-full object-cover" />
                 </div>
               ))}
             </div>

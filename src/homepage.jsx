@@ -22,10 +22,6 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
     
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
@@ -91,7 +87,7 @@ export default function HomePage() {
         {["/hero/slide1.jpg","/hero/slide2.jpg","/hero/slide3.jpg"].map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: slideAtivo === i ? 1 : 0 }}>
-            <img src={img} alt="" className="w-full h-full object-cover object-center" />
+            <img loading="lazy" src={img} alt="" className="w-full h-full object-cover object-center" />
             <div className="absolute inset-0 bg-black/35" />
           </div>
         ))}
@@ -154,7 +150,7 @@ export default function HomePage() {
                 >
                   <div className={`${cat.bg} h-48 md:h-64 flex items-center justify-center overflow-hidden`}>
                     {cat.imagem ? (
-                      <img src={cat.imagem} alt={cat.nome}
+                      <img loading="lazy" src={cat.imagem} alt={cat.nome}
                         className="w-full h-full object-contain p-6 group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <span style={serif} className="text-6xl font-semibold text-[#3D6B4A] group-hover:scale-110 transition-transform duration-300">
@@ -225,14 +221,14 @@ export default function HomePage() {
 
           <div className="relative h-[500px] hidden md:block">
             <div className="absolute top-0 right-0 w-[60%] h-[80%] z-0 bg-[#F0F5EE]">
-              <img 
+              <img loading="lazy" 
                 src="/hero/slide4.jpg" 
                 alt="Moda Chique Detalhe" 
                 className="w-full h-full object-cover object-center shadow-sm"
               />
             </div>
             <div className="absolute bottom-0 left-0 w-[60%] h-[80%] z-10 bg-[#E8F0E6] shadow-xl border-4 border-white">
-              <img 
+              <img loading="lazy" 
                 src="/hero/slide5.jpg" 
                 alt="Moda Chique Coleção" 
                 className="w-full h-full object-cover object-center"
@@ -264,7 +260,7 @@ export default function HomePage() {
                   <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100/60 hover:-translate-y-1 transition-all duration-300 cursor-pointer h-full flex flex-col">
                     <div className="bg-[#F0F5EE] h-48 md:h-64 flex items-center justify-center relative overflow-hidden shrink-0">
                       {prod.imagem_principal ? (
-                        <img src={prod.imagem_principal} alt={prod.nome_produto}
+                        <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto}
                           className="h-full w-full object-cover group-hover:scale-107 transition-transform duration-500" />
                       ) : (
                         <span className="text-5xl text-[#C8DFC4]">📷</span>

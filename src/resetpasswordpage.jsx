@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { reporSenha } from './api';
 
@@ -92,7 +92,7 @@ export default function ResetPasswordPage() {
       {/* Imagem lateral (igual ao login) */}
       <div className="hidden md:block w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#3D6B4A]/10 z-10" />
-        <img src="/fundologin.png" alt="Background" className="absolute inset-0 w-full h-full object-cover" />
+        <img loading="lazy" src="/fundologin.png" alt="Background" className="absolute inset-0 w-full h-full object-cover" />
       </div>
     </div>
   );

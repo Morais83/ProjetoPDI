@@ -15,10 +15,6 @@ export default function BrandsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
 
     const carregarDados = async () => {
       try {
@@ -107,7 +103,7 @@ export default function BrandsPage() {
                   >
                     <div className="bg-[#F0F5EE] h-40 w-full flex items-center justify-center p-4 overflow-hidden">
                       {marca.imagem_url
-                        ? <img src={marca.imagem_url} alt={marca.nome_marca} className="h-full w-full object-contain group-hover:scale-105 transition-transform" />
+                        ? <img loading="lazy" src={marca.imagem_url} alt={marca.nome_marca} className="h-full w-full object-contain group-hover:scale-105 transition-transform" />
                         : <span style={serif} className="text-4xl font-semibold text-[#3D6B4A]">{marca.nome_marca.charAt(0)}</span>
                       }
                     </div>
@@ -139,7 +135,7 @@ export default function BrandsPage() {
             <div className="max-w-7xl mx-auto flex items-center gap-8">
               <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-[#E8F0E6] overflow-hidden p-2">
                 {marcaSelecionada?.imagem_url
-                  ? <img src={marcaSelecionada.imagem_url} alt={marcaSelecionada.nome_marca} className="w-full h-full object-contain" />
+                  ? <img loading="lazy" src={marcaSelecionada.imagem_url} alt={marcaSelecionada.nome_marca} className="w-full h-full object-contain" />
                   : <span style={serif} className="text-3xl font-semibold text-[#3D6B4A]">{marcaSelecionada?.nome_marca.charAt(0)}</span>
                 }
               </div>
@@ -169,7 +165,7 @@ export default function BrandsPage() {
                       <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group cursor-pointer">
                         <div className="bg-[#F0F5EE] h-64 flex items-center justify-center overflow-hidden">
                           {prod.imagem_principal
-                            ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                            ? <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
                             : <span className="text-6xl text-[#C8DFC4]">📷</span>
                           }
                         </div>

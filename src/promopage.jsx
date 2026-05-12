@@ -29,10 +29,6 @@ export default function PromoPage() {
   const debounceMax = useRef(null);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
     carregarPromocoes();
   }, []);
 
@@ -195,7 +191,7 @@ export default function PromoPage() {
                         -{prod.desconto}%
                       </span>
                       {prod.imagem_principal
-                        ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                        ? <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto} className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
                         : <span className="text-6xl text-[#C8DFC4]">📷</span>
                       }
                     </div>

@@ -327,7 +327,7 @@ export default function AdminProdutos() {
               
               <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
                 {prod.imagem_principal
-                  ? <img src={prod.imagem_principal} alt={prod.nome_produto} className="w-full h-full object-cover" />
+                  ? <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto} className="w-full h-full object-cover" />
                   : <span style={serif} className="text-5xl font-semibold text-[#3D6B4A]">{prod.nome_produto.charAt(0)}</span>
                 }
               </div>
@@ -528,7 +528,7 @@ export default function AdminProdutos() {
                                 <div key={imgIdx} className="border border-[#E8F0E6] rounded-lg p-2">
                                   {url ? (
                                     <div className="relative">
-                                      <img
+                                      <img loading="lazy"
                                         src={url} alt=""
                                         className="w-full h-16 object-cover rounded"
                                         onError={e => e.target.style.display = 'none'}

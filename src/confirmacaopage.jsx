@@ -11,10 +11,6 @@ export default function ConfirmacaoPage() {
   const [encomenda, setEncomenda] = useState(null);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
 
     const token = localStorage.getItem('token');
     fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/${id}`, {

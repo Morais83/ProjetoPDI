@@ -50,10 +50,6 @@ export default function CatalogPage() {
   const debounceMax = useRef(null);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel  = "stylesheet";
-    document.head.appendChild(link);
   }, []);
 
   useEffect(() => { carregarDados(); }, [termoPesquisa]);
@@ -328,7 +324,7 @@ export default function CatalogPage() {
                   <div className="bg-white rounded-2xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100/60 hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                     <div className="bg-[#F0F5EE] h-44 md:h-52 flex items-center justify-center overflow-hidden relative">
                       {prod.imagem_principal
-                        ? <img src={prod.imagem_principal} alt={prod.nome_produto}
+                        ? <img loading="lazy" src={prod.imagem_principal} alt={prod.nome_produto}
                             className="h-full w-full object-cover group-hover:scale-107 transition-transform duration-500" />
                         : <span className="text-5xl text-[#C8DFC4]">📷</span>
                       }
