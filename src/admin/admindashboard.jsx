@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ShoppingCart, Users, Package, Tag,
   TrendingUp, Clock, CheckCircle, XCircle,
   ChevronRight, Award,
 } from "lucide-react";
-import AdminLayout from "./AdminLayout";
+import AdminLayout from "./adminlayout";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };

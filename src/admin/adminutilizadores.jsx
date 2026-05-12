@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import AdminLayout from "./AdminLayout";
+﻿import { useState, useEffect } from "react";
+import AdminLayout from "./adminlayout";
 
 const roleStyles = {
   admin: "bg-[#E8F0E6] text-[#3D6B4A]",

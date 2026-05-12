@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import AdminLayout from "./AdminLayout";
+﻿import { useState, useEffect } from "react";
+import AdminLayout from "./adminlayout";
 import { Search, Camera } from "lucide-react";
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 

@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   ShoppingBag, Truck, RotateCcw, HelpCircle, Phone,
   ChevronDown, ChevronRight, Mail, Clock,
   Headphones,
 } from "lucide-react";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MessageSquare, Phone, Mail, Clock, Send, Search,
@@ -6,8 +6,8 @@ import {
   ShoppingBag, Heart, Headphones, LogOut, CheckCircle,
   AlertCircle, Plus, Inbox, Tag, X
 } from "lucide-react";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
