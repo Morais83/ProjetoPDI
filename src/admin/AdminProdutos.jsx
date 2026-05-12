@@ -299,16 +299,22 @@ export default function AdminProdutos() {
         </button>
       </div>
 
-      {/* Pesquisa */}
-      <div className="flex items-center border border-[#C8DFC4] rounded-lg px-4 py-2.5 bg-white gap-2 mb-6 max-w-sm">
-        <Search size={18} strokeWidth={1.5} />
-        <input
-          type="text"
-          placeholder="Pesquisar por nome do produto"
-          value={pesquisa}
-          onChange={e => setPesquisa(e.target.value)}
-          className="text-sm outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full"
-        />
+      {/* Pesquisa e Stats */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+        <div className="flex items-center border border-[#C8DFC4] rounded-lg px-4 py-2.5 bg-white gap-2 w-full max-w-sm">
+          <Search size={18} strokeWidth={1.5} />
+          <input
+            type="text"
+            placeholder="Pesquisar por nome do produto"
+            value={pesquisa}
+            onChange={e => setPesquisa(e.target.value)}
+            className="text-sm outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full"
+          />
+        </div>
+        <div className="bg-white border border-[#E8F0E6] rounded-lg px-6 py-2 text-center">
+          <p className="text-lg font-semibold text-[#2C3A2C] leading-none">{produtos.length}</p>
+          <p className="text-[9px] text-[#8FAF8A] uppercase tracking-widest mt-1">Total Produtos</p>
+        </div>
       </div>
 
       {/* Grid */}
