@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { login, pedirRecuperacao } from './api'; // Adicionado pedirRecuperacao
+import { login, pedirRecuperacao } from './api'; 
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
-  const [mensagemSucesso, setMensagemSucesso] = useState(""); // Novo estado
-  const [mostrarRecuperacao, setMostrarRecuperacao] = useState(false); // Novo estado
+  const [mensagemSucesso, setMensagemSucesso] = useState(""); 
+  const [mostrarRecuperacao, setMostrarRecuperacao] = useState(false); 
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -33,7 +33,7 @@ export default function LoginPage() {
       localStorage.setItem('utilizador', JSON.stringify(resultado.utilizador));
 
       if (resultado.utilizador.perfil === 'admin') {
-        window.location.href = '/admin/categorias';
+        window.location.href = '/admin/dashboard';
       } else {
         window.location.href = '/';
       }
@@ -57,8 +57,6 @@ export default function LoginPage() {
       setErro(resultado.erro);
     } else {
       setMensagemSucesso(resultado.mensagem);
-      // Opcional: esconder o form de recuperação após sucesso
-      // setMostrarRecuperacao(false);
     }
   };
 

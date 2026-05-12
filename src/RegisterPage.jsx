@@ -8,7 +8,6 @@ export default function RegisterPage() {
     password: "",
     nome: "",
     telefone: "",
-    prefixo: "+351",
     aceitaTermos: false
   });
   const [erro, setErro] = useState("");
@@ -36,9 +35,39 @@ export default function RegisterPage() {
     e.preventDefault();
     setErro("");
 
+    // Nome
+    if (!formData.nome.trim() || formData.nome.trim().length < 2) {
+      setErro("O nome deve ter pelo menos 2 caracteres."); return;
+    }
+
+    // Email
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(formData.email)) {
+      setErro("Introduz um email válido (ex: nome@email.com)."); return;
+    }
+
+    // Telefone
+    if (formData.telefone) {
+      const telLimpo = formData.telefone.replace(/\s+/g, "");
+      if (!/^\d+$/.test(telLimpo) || telLimpo.length !== 9 ) {
+        setErro("O telefone deve ter 9 dígitos numéricos."); return;
+      }
+    }
+
+    // Password
+    if (formData.password.length < 8) {
+      setErro("A palavra-passe deve ter pelo menos 8 caracteres."); return;
+    }
+    if (!/[A-Z]/.test(formData.password)) {
+      setErro("A palavra-passe deve ter pelo menos uma letra maiúscula."); return;
+    }
+    if (!/[0-9]/.test(formData.password)) {
+      setErro("A palavra-passe deve ter pelo menos um número."); return;
+    }
+
+    // Termos
     if (!formData.aceitaTermos) {
-      setErro("Tens de aceitar a Política de Privacidade");
-      return;
+      setErro("Tens de aceitar a Política de Privacidade."); return;
     }
 
     const resultado = await registar({
@@ -53,7 +82,7 @@ export default function RegisterPage() {
     if (resultado.erro) {
       setErro(resultado.erro);
     } else {
-      window.location.href = '/';
+      window.location.href = '/login';
     }
   };
 
@@ -101,54 +130,21 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* TELEFONE COM PREFIXO */}
+            {/* TELEFONE*/}
             <div className="flex gap-4">
-              <div className="w-32 relative">
-                <label className="block text-[11px] tracking-widests uppercase text-[#6B9E63] mb-2 font-medium">Prefixo</label>
-                <div 
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="w-full border-b border-[#C8DFC4] py-3 text-sm text-[#5C6E5C] cursor-pointer flex justify-between items-center hover:border-[#3D6B4A] transition-all"
-                >
-                  <span>{formData.prefixo || "+351"}</span>
-                  <span className={`text-[10px] transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>▼</span>
-                </div>
-                {isOpen && (
-                  <div className="absolute z-50 mt-1 w-full bg-white border border-[#E8F0E6] shadow-xl rounded-lg overflow-hidden">
-                    {[
-                      { code: "+351", label: "PT (+351)" },
-                      { code: "+34",  label: "ES (+34)" },
-                      { code: "+33",  label: "FR (+33)" },
-                      { code: "+44",  label: "UK (+44)" },
-                      { code: "+49",  label: "AL (+49)" },
-                      { code: "+55",  label: "BR (+55)" },
-                      { code: "+352", label: "LU (+352)" },
-                      { code: "+39",  label: "IT (+39)" },
-                    ].map((item) => (
-                      <div 
-                        key={item.code}
-                        className="px-4 py-2.5 text-xs text-[#5C6E5C] hover:bg-[#F7F9F5] hover:text-[#3D6B4A] cursor-pointer transition-colors"
-                        onClick={() => {
-                          setFormData({ ...formData, prefixo: item.code });
-                          setIsOpen(false);
-                        }}
-                      >
-                        {item.label}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1">
-                <label className="block text-[11px] tracking-widest uppercase text-[#6B9E63] mb-2 font-medium">Telefone</label>
-                <input 
-                  type="tel" 
-                  name="telefone"
-                  onChange={handleChange}
-                  placeholder="912 345 678"
-                  className="w-full border-b border-[#C8DFC4] bg-transparent py-3 text-sm outline-none focus:border-[#3D6B4A] transition-all placeholder:text-gray-300"
-                />
-              </div>
+              <input
+                type="tel"
+                name="telefone"
+                value={formData.telefone}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^\d\s]/g, '');
+                  if (val.replace(/\s/g, '').length <= 9) {
+                    setFormData(prev => ({ ...prev, telefone: val }));
+                  }
+                }}
+                placeholder="912 345 678"
+                className="w-full border-b border-[#C8DFC4] bg-transparent py-3 text-sm outline-none focus:border-[#3D6B4A] transition-all placeholder:text-gray-300"
+              />
             </div>
 
             {/* PALAVRA-PASSE */}
@@ -162,6 +158,26 @@ export default function RegisterPage() {
                 className="w-full border-b border-[#C8DFC4] bg-transparent py-3 text-sm outline-none focus:border-[#3D6B4A] transition-all placeholder:text-gray-300"
               />
             </div>
+
+            {/* REQUISITOS */}
+            {formData.password && (
+              <div className="space-y-1">
+                {[
+                  { ok: formData.password.length >= 8, texto: "Mínimo 8 caracteres" },
+                  { ok: /[A-Z]/.test(formData.password), texto: "Uma letra maiúscula" },
+                  { ok: /[0-9]/.test(formData.password), texto: "Um número" },
+                ].map((req, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className={`text-xs ${req.ok ? "text-[#3D6B4A]" : "text-[#C8DFC4]"}`}>
+                      {req.ok ? "✓" : "○"}
+                    </span>
+                    <span className={`text-xs ${req.ok ? "text-[#3D6B4A]" : "text-[#8FAF8A]"}`}>
+                      {req.texto}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* TERMOS */}
             <div className="flex items-center gap-3">

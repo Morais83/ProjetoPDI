@@ -169,7 +169,7 @@ export default function AdminCategorias() {
         <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
           {Array(6).fill(0).map((_, i) => (
             <div key={i} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden animate-pulse">
-              <div className="bg-[#F0F5EE] h-36" />
+              <div className="bg-[#F0F5EE] h-60" />
               <div className="p-4 space-y-2">
                 <div className="h-3 bg-[#E8F0E6] rounded w-3/4" />
                 <div className="h-2.5 bg-[#E8F0E6] rounded w-1/2" />
@@ -182,7 +182,7 @@ export default function AdminCategorias() {
           {subcategorias.map((cat) => (
             <div key={cat.id_categoria} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden flex flex-col hover:shadow-md transition-shadow">
 
-              <div className="bg-[#F0F5EE] h-36 flex items-center justify-center relative p-4 shrink-0">
+              <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
                 {cat.imagem ? (
                   <img src={cat.imagem} alt={cat.nome_categoria} className="w-full h-full object-contain" />
                 ) : (

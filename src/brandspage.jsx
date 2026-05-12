@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./footer";
-import Navbar from "./navbar";
+import Footer from "./Footer";
+import Navbar from "./Navbar";
 import { Search } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };

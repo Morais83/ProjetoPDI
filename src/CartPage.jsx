@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import { getCarrinho, removerDoCarrinho, atualizarQuantidade } from './cart';
+import { 
+  ShoppingBag, 
+  Trash2, 
+  ArrowLeft, 
+  Camera, 
+  AlertTriangle, 
+  Lock, 
+  RotateCcw, 
+  Truck 
+} from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -44,9 +54,6 @@ export default function CartPage() {
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-      <div className="bg-[#3D6B4A] text-white text-center py-2 text-xs tracking-widest">
-        ✦ Envio gratuito em compras acima de 50€ &nbsp;|&nbsp; Nova coleção Primavera-Verão disponível ✦
-      </div>
 
       <Navbar />
 
@@ -61,7 +68,9 @@ export default function CartPage() {
 
         {produtos.length === 0 ? (
           <div className="text-center py-24">
-            <span className="text-8xl mb-6 block">🛍️</span>
+            <div className="flex justify-center mb-6">
+              <ShoppingBag size={80} strokeWidth={1} className="text-[#C8DFC4]" />
+            </div>
             <p style={serif} className="text-3xl text-[#C8DFC4] mb-3">O teu carrinho está vazio</p>
             <p className="text-sm text-[#8FAF8A] mb-8">Explora a nossa coleção e encontra algo que adores.</p>
             <Link to="/catalogo" onClick={() => window.scrollTo(0, 0)} className="bg-[#3D6B4A] text-white px-8 py-3.5 rounded-full text-xs tracking-widest uppercase hover:bg-[#2C5038] transition-colors">
@@ -80,7 +89,7 @@ export default function CartPage() {
                     <div className="w-24 h-28 rounded-xl flex-shrink-0 overflow-hidden bg-[#F0F5EE]">
                       {prod.imagem_url
                         ? <img src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover hover:opacity-80 transition-opacity" />
-                        : <span className="w-full h-full flex items-center justify-center text-4xl text-[#C8DFC4]">📷</span>
+                        : <div className="w-full h-full flex items-center justify-center text-[#C8DFC4]"><Camera size={32} /></div>
                       }
                     </div>
                   </Link>
@@ -103,8 +112,8 @@ export default function CartPage() {
 
                     {/* Aviso de stock baixo */}
                     {prod.stock > 0 && prod.stock <= 3 && (
-                      <p className="text-[10px] text-[#A67C00] bg-[#FEF9E7] px-2 py-1 rounded-lg mb-3 inline-block">
-                        ⚠ Apenas {prod.stock} em stock
+                      <p className="text-[10px] text-[#A67C00] bg-[#FEF9E7] px-2 py-1 rounded-lg mb-3 inline-flex items-center gap-1.5">
+                        <AlertTriangle size={12} /> Apenas {prod.stock} em stock
                       </p>
                     )}
 
@@ -119,8 +128,8 @@ export default function CartPage() {
                           className="w-8 h-8 flex items-center justify-center text-[#3D6B4A] hover:bg-[#F0F5EE] transition-colors text-base disabled:opacity-30">+</button>
                       </div>
                       <button onClick={() => remover(prod.id_variante)}
-                        className="text-xs text-[#C0392B] hover:underline flex items-center gap-1">
-                        🗑️ Remover
+                        className="text-xs text-[#C0392B] hover:underline flex items-center gap-1 font-medium">
+                        <Trash2 size={14} /> Remover
                       </button>
                     </div>
                   </div>
@@ -128,12 +137,12 @@ export default function CartPage() {
               ))}
 
               <Link to="/catalogo" onClick={() => window.scrollTo(0, 0)} className="inline-flex items-center gap-2 text-sm text-[#3D6B4A] hover:underline">
-                ← Continuar a comprar
+                <ArrowLeft size={16} /> Continuar a comprar
               </Link>
             </div>
 
             {/* Resumo */}
-            <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6 sticky top-24">
+            <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6 sticky top-24 shadow-sm">
               <h2 style={serif} className="text-2xl font-semibold text-[#1A2E1A] mb-6">Resumo do Pedido</h2>
 
               <div className="space-y-3 mb-6">
@@ -164,30 +173,33 @@ export default function CartPage() {
               </div>
 
               <Link to="/checkout" onClick={() => window.scrollTo(0, 0)}
-                className="w-full block text-center bg-[#3D6B4A] text-white py-4 rounded-full text-xs tracking-widest uppercase hover:bg-[#2C5038] transition-all shadow-lg shadow-green-900/10 mb-4">
+                className="w-full block text-center bg-[#3D6B4A] text-white py-4 rounded-full text-xs tracking-widest uppercase hover:bg-[#2C5038] transition-all shadow-lg shadow-green-900/10 mb-4 font-semibold">
                 Continuar para Pagamento
               </Link>
 
               <div className="border-t border-[#E8F0E6] pt-4">
                 <p className="text-[10px] text-[#8FAF8A] text-center mb-3 tracking-widest uppercase">Métodos de pagamento aceites</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {["MBWay", "PayPal", "Visa", "Mastercard", "Cobrança"].map(m => (
-                    <span key={m} className="bg-[#F7F9F5] border border-[#E8F0E6] px-3 py-1 rounded-md text-xs text-[#5C6E5C]">{m}</span>
+                  {["MBWay", "Visa", "Mastercard", "Cobrança"].map(m => (
+                    <span key={m} className="bg-[#F7F9F5] border border-[#E8F0E6] px-3 py-1 rounded-md text-[10px] text-[#5C6E5C] font-medium uppercase">{m}</span>
                   ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-[#E8F0E6]">
+              <div className="grid grid-cols-3 gap-2 mt-6 pt-6 border-t border-[#E8F0E6]">
                 {[
-                  { icon: "🔒", text: "Pagamento Seguro" },
-                  { icon: "↩️", text: "30 dias devolução" },
-                  { icon: "🚚", text: "Envio rápido" },
-                ].map((b, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-lg mb-1">{b.icon}</div>
-                    <div className="text-[9px] text-[#8FAF8A] leading-tight">{b.text}</div>
-                  </div>
-                ))}
+                  { icon: Lock, text: "Seguro" },
+                  { icon: RotateCcw, text: "30 dias" },
+                  { icon: Truck, text: "Rápido" },
+                ].map((b, i) => {
+                  const BadgeIcon = b.icon;
+                  return (
+                    <div key={i} className="text-center flex flex-col items-center">
+                      <BadgeIcon size={18} className="text-[#3D6B4A] mb-1.5" />
+                      <div className="text-[9px] text-[#8FAF8A] leading-tight uppercase font-medium tracking-tighter">{b.text}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

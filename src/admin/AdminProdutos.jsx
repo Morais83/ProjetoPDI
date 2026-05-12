@@ -299,8 +299,13 @@ export default function AdminProdutos() {
         </button>
       </div>
 
+<<<<<<< HEAD
       {/* Pesquisa e Stats */}
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+=======
+      {/* Pesquisa */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8 items-center">
+>>>>>>> 9e05ab0 (fix: registro, icons, adminprodutos and more)
         <div className="flex items-center border border-[#C8DFC4] rounded-lg px-4 py-2.5 bg-white gap-2 w-full max-w-sm">
           <Search size={18} strokeWidth={1.5} />
           <input
