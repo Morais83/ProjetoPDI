@@ -181,7 +181,7 @@ export default function HelpPage() {
             {[
               { icon: Mail,  texto: "suporte@modachique.pt" },
               { icon: Phone, texto: "+351 210 000 000"      },
-              { icon: Clock, texto: "Seg – Sáb: 9h – 19h"  },
+              { icon: Clock, texto: "Seg – Sex: 9h – 19h"  },
             ].map(({ icon: Icon, texto }) => (
               <div key={texto} className="flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full border border-[#C8DFC4] text-xs text-[#4A5C4A]">
                 <Icon size={13} className="text-[#6B9E63]" />

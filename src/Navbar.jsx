@@ -164,7 +164,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 md:gap-4 md:ml-2 md:pl-4 md:border-l md:border-[#E2EBE0]">
               {utilizador ? (
                 utilizador.perfil === 'admin' ? (
-                  <Link to="/admin/categorias" onClick={fecharTudo} className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+                  <Link to="/admin/dashboard" onClick={fecharTudo} className="text-xs tracking-widest uppercase text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
                     Admin
                   </Link>
                 ) : (

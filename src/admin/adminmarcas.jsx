@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
 import { Search, Camera } from "lucide-react";
-
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 
 export default function AdminMarcas() {

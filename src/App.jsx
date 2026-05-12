@@ -49,6 +49,7 @@ export default function App() {
         <Route path="/recuperar-senha/:token" element={<ResetPasswordPage />} />
         <Route path="/suporte" element={<SuportePage />} />
         <Route path="/admin/suporte" element={<AdminSuporte />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );

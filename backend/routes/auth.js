@@ -24,6 +24,31 @@ router.post('/registo', async (req, res) => {
     return res.status(400).json({ erro: 'Nome, email e password são obrigatórios' });
   }
 
+  // Validar email
+  const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!regexEmail.test(email)) {
+    return res.status(400).json({ erro: 'Email inválido' });
+  }
+
+  // Validar telefone
+  if (telefone) {
+    const telLimpo = telefone.replace(/\s/g, "");
+    if (!/^\d+$/.test(telLimpo) || telLimpo.length < 9 || telLimpo.length > 13) {
+      return res.status(400).json({ erro: 'Telefone inválido' });
+    }
+  }
+
+  // Validar password
+  if (password.length < 8) {
+    return res.status(400).json({ erro: 'A password deve ter pelo menos 8 caracteres' });
+  }
+  if (!/[A-Z]/.test(password)) {
+    return res.status(400).json({ erro: 'A password deve ter pelo menos uma letra maiúscula' });
+  }
+  if (!/[0-9]/.test(password)) {
+    return res.status(400).json({ erro: 'A password deve ter pelo menos um número' });
+  }
+
   try {
     const [existe] = await db.query('SELECT id_utilizador FROM utilizadores WHERE email = ?', [email]);
     if (existe.length > 0) {
