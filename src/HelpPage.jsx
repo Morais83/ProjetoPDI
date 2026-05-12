@@ -1,15 +1,21 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import {
+  ShoppingBag, Truck, RotateCcw, HelpCircle, Phone,
+  ChevronDown, ChevronRight, Mail, Clock,
+  Headphones,
+} from "lucide-react";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
-const sans = { fontFamily: "'Jost', sans-serif" };
+const sans  = { fontFamily: "'Jost', sans-serif" };
 
 const topicos = [
   {
     id: "comprar",
     label: "Como Comprar",
+    icon: ShoppingBag,
     items: [
       {
         title: "Como faço uma encomenda?",
@@ -32,6 +38,7 @@ const topicos = [
   {
     id: "envios",
     label: "Envios",
+    icon: Truck,
     items: [
       {
         title: "Qual é o prazo de entrega?",
@@ -54,10 +61,11 @@ const topicos = [
   {
     id: "devolucoes",
     label: "Devoluções",
+    icon: RotateCcw,
     items: [
       {
         title: "Qual é a política de devoluções?",
-        content: "Aceituamos devoluções até 30 dias após a receção da encomenda. Os artigos devem estar em perfeito estado, sem sinais de uso, com todas as etiquetas originais e na embalagem original."
+        content: "Aceitamos devoluções até 30 dias após a receção da encomenda. Os artigos devem estar em perfeito estado, sem sinais de uso, com todas as etiquetas originais e na embalagem original."
       },
       {
         title: "Como faço uma devolução?",
@@ -76,6 +84,7 @@ const topicos = [
   {
     id: "faq",
     label: "FAQ",
+    icon: HelpCircle,
     items: [
       {
         title: "Como sei qual o meu tamanho?",
@@ -98,6 +107,7 @@ const topicos = [
   {
     id: "contacto",
     label: "Contacto",
+    icon: Phone,
     items: [
       {
         title: "Como posso entrar em contacto com o suporte?",
@@ -120,93 +130,148 @@ const topicos = [
 ];
 
 export default function HelpPage() {
-  const [topicoAtivo, setTopicoAtivo] = useState("comprar");
+  const [topicoAtivo, setTopicoAtivo]       = useState("comprar");
   const [accordionAberto, setAccordionAberto] = useState(null);
-  
   const location = useLocation();
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const topicoDaURL = params.get("topico");
-
+    const params        = new URLSearchParams(location.search);
+    const topicoDaURL   = params.get("topico");
     if (topicoDaURL) {
       setTopicoAtivo(topicoDaURL);
-      setAccordionAberto(null); 
-      window.scrollTo({ top: 0, behavior: 'smooth' }); 
+      setAccordionAberto(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [location]); 
+  }, [location]);
 
   useEffect(() => {
     const link = document.createElement("link");
     link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
+    link.rel  = "stylesheet";
     document.head.appendChild(link);
   }, []);
 
   const topicoAtual = topicos.find((t) => t.id === topicoAtivo) || topicos[0];
+  const IconAtiva   = topicoAtual.icon;
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
-
       <Navbar />
-      {/* 2. Banner de Título */}
-      <div className="bg-[#E8F0E6] py-12 px-8 text-center">
-        <p className="text-xs tracking-[0.15em] uppercase text-[#6B9E63] mb-2">Estamos aqui para ajudar</p>
-        <h1 style={serif} className="text-5xl font-semibold text-[#1A2E1A]">Centro de Ajuda</h1>
-      </div>
 
-      {/* 3. CORPO DA PÁGINA */}
-      <div className="max-w-7xl mx-auto px-8 py-12 flex flex-col md:flex-row gap-10 items-start">
-        {/* Sidebar (O Quadrado Verde) */}
-        <div className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-[#3D6B4A] rounded-2xl overflow-hidden shadow-lg sticky top-8">
-            <div className="px-5 py-4 border-b border-[#4F8A61]">
-              <p className="text-xs tracking-widest uppercase text-white font-bold">Menu de Ajuda</p>
-            </div>
-            <nav className="py-2">
-              {topicos.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => { setTopicoAtivo(t.id); setAccordionAberto(null); }}
-                  className={`w-full text-left px-5 py-3 text-sm transition-all duration-200 ${
-                    topicoAtivo === t.id
-                      ? "text-white font-semibold bg-[#2C4A2C] pl-7"
-                      : "text-[#A8C4A8] hover:text-white hover:bg-[#457A54]"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </nav>
-          </div>
+      {/* ── Hero ── */}
+      <div className="relative bg-gradient-to-b from-[#E0EBD9] to-[#F7F9F5] py-14 md:py-20 px-6 text-center overflow-hidden">
+        {/* Decoração de fundo */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-10 -left-10 w-64 h-64 rounded-full bg-[#3D6B4A]/5" />
+          <div className="absolute -bottom-16 -right-10 w-80 h-80 rounded-full bg-[#3D6B4A]/5" />
         </div>
 
-        {/* Conteúdo Principal (Direita) */}
-        <div className="flex-1">
-          <h2 style={serif} className="text-3xl font-semibold text-[#1A2E1A] mb-6 border-b border-[#E8F0E6] pb-4">
-            {topicoAtual.label}
-          </h2>
+        <div className="relative">
+          <div className="w-14 h-14 rounded-2xl bg-[#3D6B4A] flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-900/20">
+            <Headphones size={26} className="text-white" />
+          </div>
+          <p className="text-xs tracking-[0.2em] uppercase text-[#6B9E63] mb-3 font-medium">Estamos aqui para ajudar</p>
+          <h1 style={serif} className="text-5xl md:text-6xl font-semibold text-[#1A2E1A] mb-4">Centro de Ajuda</h1>
+          <p className="text-sm text-[#6B9E63] max-w-md mx-auto leading-relaxed">
+            Encontra respostas para as perguntas mais frequentes ou contacta a nossa equipa de suporte.
+          </p>
 
-          <div className="space-y-1">
-            {topicoAtual.items.map((item, i) => (
-              <div key={i} className="border-b border-[#E8F0E6]">
-                <button
-                  onClick={() => setAccordionAberto(accordionAberto === i ? null : i)}
-                  className="w-full flex items-center justify-between py-5 text-left"
-                >
-                  <span className="text-sm font-medium text-[#2C3A2C] tracking-wide">{item.title}</span>
-                  <span className={`text-[#6B9E63] transition-transform duration-200 ${accordionAberto === i ? "rotate-180" : ""}`}>
-                    ▼
-                  </span>
-                </button>
-                {accordionAberto === i && (
-                  <div className="pb-5 animate-in fade-in duration-300">
-                    <p className="text-sm text-[#5C6E5C] leading-relaxed">{item.content}</p>
-                  </div>
-                )}
+          {/* Contactos rápidos */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+            {[
+              { icon: Mail,  texto: "suporte@modachique.pt" },
+              { icon: Phone, texto: "+351 210 000 000"      },
+              { icon: Clock, texto: "Seg – Sáb: 9h – 19h"  },
+            ].map(({ icon: Icon, texto }) => (
+              <div key={texto} className="flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full border border-[#C8DFC4] text-xs text-[#4A5C4A]">
+                <Icon size={13} className="text-[#6B9E63]" />
+                {texto}
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ── Corpo ── */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-10 flex flex-col md:flex-row gap-8 items-start">
+
+        {/* ── Sidebar ── */}
+        <aside className="w-full md:w-60 flex-shrink-0 md:sticky md:top-24">
+          <div className="bg-white rounded-2xl border border-[#E8F0E6] shadow-sm overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-[#E8F0E6]">
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-[#8FAF8A]">Menu de Ajuda</p>
+            </div>
+            <nav>
+              {topicos.map(({ id, label, icon: Icon }) => {
+                const ativo = topicoAtivo === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => { setTopicoAtivo(id); setAccordionAberto(null); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all border-b border-[#F0F5EE] last:border-0 group ${
+                      ativo
+                        ? "bg-[#F0F5EE] text-[#3D6B4A] font-medium"
+                        : "text-[#4A5C4A] hover:bg-[#F7F9F5] hover:text-[#3D6B4A]"
+                    }`}
+                  >
+                    <Icon
+                      size={15}
+                      className={ativo ? "text-[#3D6B4A]" : "text-[#A8C4A8] group-hover:text-[#6B9E63] transition-colors"}
+                    />
+                    <span className="flex-1 text-left">{label}</span>
+                    {ativo && <ChevronRight size={13} className="text-[#3D6B4A] opacity-60" />}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+        </aside>
+
+        {/* ── Conteúdo principal ── */}
+        <div className="flex-1 min-w-0">
+
+          {/* Cabeçalho da secção */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-[#3D6B4A] flex items-center justify-center flex-shrink-0 shadow-sm shadow-green-900/15">
+              <IconAtiva size={18} className="text-white" />
+            </div>
+            <div>
+              <h2 style={serif} className="text-3xl font-semibold text-[#1A2E1A] leading-tight">{topicoAtual.label}</h2>
+              <p className="text-xs text-[#8FAF8A] mt-0.5">{topicoAtual.items.length} perguntas frequentes</p>
+            </div>
+          </div>
+
+          {/* Acordeão */}
+          <div className="bg-white rounded-2xl border border-[#E8F0E6] shadow-sm overflow-hidden">
+            {topicoAtual.items.map((item, i) => {
+              const aberto = accordionAberto === i;
+              return (
+                <div key={i} className={`border-b border-[#F0F5EE] last:border-0 transition-colors ${aberto ? "bg-[#FAFCFA]" : "hover:bg-[#FAFCFA]"}`}>
+                  <button
+                    onClick={() => setAccordionAberto(aberto ? null : i)}
+                    className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left group"
+                  >
+                    <span className={`text-sm leading-snug transition-colors ${aberto ? "font-semibold text-[#3D6B4A]" : "font-medium text-[#2C3A2C] group-hover:text-[#3D6B4A]"}`}>
+                      {item.title}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={`flex-shrink-0 transition-all duration-300 ${aberto ? "rotate-180 text-[#3D6B4A]" : "text-[#A8C4A8] group-hover:text-[#6B9E63]"}`}
+                    />
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-300 ease-in-out ${aberto ? "max-h-96" : "max-h-0"}`}>
+                    <div className="px-6 pb-5">
+                      <div className="border-l-2 border-[#C8DFC4] pl-4">
+                        <p className="text-sm text-[#5C6E5C] leading-relaxed">{item.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
       </div>
 

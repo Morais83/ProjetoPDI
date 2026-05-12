@@ -1,5 +1,19 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
+import { CheckCircle, AlertCircle, X } from "lucide-react";
+
+function Toast({ toast, onClose }) {
+  if (!toast) return null;
+  return (
+    <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium ${
+      toast.tipo === "sucesso" ? "bg-[#3D6B4A] text-white" : "bg-[#C0392B] text-white"
+    }`}>
+      {toast.tipo === "sucesso" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+      <span>{toast.msg}</span>
+      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100"><X size={14} /></button>
+    </div>
+  );
+}
 
 const statusStyles = {
   pendente: "bg-[#FEF9E7] text-[#A67C00]",
@@ -28,6 +42,12 @@ export default function AdminEncomendas() {
   const [encomendaAberta, setEncomendaAberta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pesquisa, setPesquisa] = useState("");
+  const [toast, setToast] = useState(null);
+
+  const mostrarToast = (msg, tipo = "sucesso") => {
+    setToast({ msg, tipo });
+    setTimeout(() => setToast(null), 4000);
+  };
   
 
   useEffect(() => {
@@ -65,8 +85,9 @@ export default function AdminEncomendas() {
       });
       setEncomendaAberta(prev => ({ ...prev, estado: novoEstado }));
       setEncomendas(prev => prev.map(e => e.id_encomenda === id ? { ...e, estado: novoEstado } : e));
+      mostrarToast(`Estado atualizado para "${statusLabels[novoEstado]}".`);
     } catch (err) {
-      console.error(err);
+      mostrarToast("Erro ao atualizar estado.", "erro");
     }
   };
 
@@ -75,10 +96,10 @@ export default function AdminEncomendas() {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/limpar`, { method: 'DELETE' });
       const dados = await res.json();
-      alert(dados.mensagem || "Encomendas apagadas e stock restaurado.");
+      mostrarToast(dados.mensagem || "Encomendas apagadas e stock restaurado.");
       carregarEncomendas();
     } catch (err) {
-      alert("Erro ao limpar encomendas.");
+      mostrarToast("Erro ao limpar encomendas.", "erro");
     }
   };
 
@@ -92,6 +113,7 @@ export default function AdminEncomendas() {
 
   return (
     <AdminLayout>
+      <Toast toast={toast} onClose={() => setToast(null)} />
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 style={serif} className="text-3xl font-semibold text-[#1A2E1A]">Encomendas</h1>
@@ -145,7 +167,19 @@ export default function AdminEncomendas() {
 
       {/* Tabela */}
       {loading ? (
-        <p className="text-sm text-[#8FAF8A]">A carregar encomendas...</p>
+        <div className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden animate-pulse">
+          {Array(6).fill(0).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4 border-b border-[#F0F5EE]">
+              <div className="w-12 h-3 bg-[#E8F0E6] rounded" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 bg-[#E8F0E6] rounded w-1/3" />
+                <div className="h-2.5 bg-[#E8F0E6] rounded w-1/4" />
+              </div>
+              <div className="w-16 h-3 bg-[#E8F0E6] rounded" />
+              <div className="w-20 h-6 bg-[#E8F0E6] rounded-full" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div style={sans} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden">
           <table className="w-full text-sm">

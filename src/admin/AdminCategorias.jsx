@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLayout from "./AdminLayout";
-import { Camera } from "lucide-react";
+import { Camera, CheckCircle, AlertCircle, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 
@@ -10,6 +10,19 @@ const categoriasPrincipais = [
   { id: 3, nome: "Acessórios" },
 ];
 
+function Toast({ toast, onClose }) {
+  if (!toast) return null;
+  return (
+    <div className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-sm font-medium ${
+      toast.tipo === "sucesso" ? "bg-[#3D6B4A] text-white" : "bg-[#C0392B] text-white"
+    }`}>
+      {toast.tipo === "sucesso" ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+      <span>{toast.msg}</span>
+      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100"><X size={14} /></button>
+    </div>
+  );
+}
+
 export default function AdminCategorias() {
   const [categorias, setCategorias] = useState([]);
   const [abaAtiva, setAbaAtiva] = useState(1);
@@ -17,6 +30,7 @@ export default function AdminCategorias() {
   const [categoriaEditando, setCategoriaEditando] = useState(null);
   const [form, setForm] = useState({ nome_categoria: "", descricao: "", imagem: "" });
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     carregarCategorias();
@@ -52,13 +66,19 @@ export default function AdminCategorias() {
     setModalAberto(true);
   };
 
+  const mostrarToast = (msg, tipo = "sucesso") => {
+    setToast({ msg, tipo });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta categoria?")) return;
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/categorias/${id}`, { method: 'DELETE' });
       carregarCategorias();
+      mostrarToast("Categoria eliminada com sucesso.");
     } catch (err) {
-      console.error(err);
+      mostrarToast("Erro ao eliminar categoria.", "erro");
     }
   };
 
@@ -97,22 +117,25 @@ export default function AdminCategorias() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
+        mostrarToast("Categoria atualizada com sucesso.");
       } else {
         await fetch(`${import.meta.env.VITE_API_URL}/api/categorias`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form, id_categoria_pai: abaAtiva }),
         });
+        mostrarToast("Categoria criada com sucesso.");
       }
       setModalAberto(false);
       carregarCategorias();
     } catch (err) {
-      console.error(err);
+      mostrarToast("Erro ao guardar categoria.", "erro");
     }
   };
 
   return (
     <AdminLayout>
+      <Toast toast={toast} onClose={() => setToast(null)} />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 style={serif} className="text-3xl font-semibold text-[#1A2E1A]">Categorias</h1>
@@ -143,13 +166,23 @@ export default function AdminCategorias() {
 
       {/* Grid Subcategorias */}
       {loading ? (
-        <p className="text-sm text-[#8FAF8A]">A carregar categorias...</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
+          {Array(6).fill(0).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden animate-pulse">
+              <div className="bg-[#F0F5EE] h-36" />
+              <div className="p-4 space-y-2">
+                <div className="h-3 bg-[#E8F0E6] rounded w-3/4" />
+                <div className="h-2.5 bg-[#E8F0E6] rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-6 gap-5">
           {subcategorias.map((cat) => (
             <div key={cat.id_categoria} className="bg-white rounded-xl border border-[#E8F0E6] overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-              
-              <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
+
+              <div className="bg-[#F0F5EE] h-36 flex items-center justify-center relative p-4 shrink-0">
                 {cat.imagem ? (
                   <img src={cat.imagem} alt={cat.nome_categoria} className="w-full h-full object-contain" />
                 ) : (
