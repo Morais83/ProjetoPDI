@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 import { getCarrinho, removerDoCarrinho, atualizarQuantidade } from './cart';
 import { 
   ShoppingBag, 

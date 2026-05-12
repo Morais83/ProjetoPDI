@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 import { SlidersHorizontal, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };

@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
-import { SkeletonCard } from "./Skeleton";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import { SkeletonCard } from "./skeleton";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };

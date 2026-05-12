@@ -1,27 +1,27 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './index.css';
-import HomePage from "./HomePage";
-import LoginPage from "./LoginPage";
-import RegisterPage from "./RegisterPage";
-import ProductPage from "./ProductPage";
-import CatalogPage from "./CatalogPage";
-import AdminCategorias from "./admin/AdminCategorias";
-import AdminProdutos from "./admin/AdminProdutos";
-import AdminEncomendas from "./admin/AdminEncomendas";
-import AdminUtilizadores from "./admin/AdminUtilizadores";
+import HomePage from "./homepage";
+import LoginPage from "./loginpage";
+import RegisterPage from "./registerpage";
+import ProductPage from "./productpage";
+import CatalogPage from "./catalogpage";
+import AdminCategorias from "./admin/admincategorias";
+import AdminProdutos from "./admin/adminprodutos";
+import AdminEncomendas from "./admin/adminencomendas";
+import AdminUtilizadores from "./admin/adminutilizadores";
 import AdminMarcas from "./admin/adminmarcas";
-import ProfilePage from "./ProfilePage";
-import HelpPage from "./HelpPage";
-import AboutPage from "./AboutPage";
-import CheckoutPage from "./CheckOutPage";
+import ProfilePage from "./profilepage";
+import HelpPage from "./helppage";
+import AboutPage from "./aboutpage";
+import CheckoutPage from "./checkoutpage";
 import ConfirmacaoPage from "./confirmacaopage";
-import CartPage from "./CartPage";
+import CartPage from "./cartpage";
 import BrandsPage from "./brandspage";
 import PromoPage from "./promopage";
 import ResetPasswordPage from './resetpasswordpage';
-import SuportePage from './SuportePage';
-import AdminSuporte from './admin/AdminSuporte';
-import AdminDashboard from './admin/AdminDashboard';
+import SuportePage from './suportepage';
+import AdminSuporte from './admin/adminsuporte';
+import AdminDashboard from './admin/admindashboard';
 
 export default function App() {
   return (

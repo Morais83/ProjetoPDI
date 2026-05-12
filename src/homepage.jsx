@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
-import { SkeletonCard, SkeletonCardTall } from "./Skeleton";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import { SkeletonCard, SkeletonCardTall } from "./skeleton";
 import { Truck, RotateCcw, ShieldCheck, MessageSquare } from "lucide-react";
 
 export default function HomePage() {

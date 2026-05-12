@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
-import GuiaTamanhos from "./GuiaTamanhos";
+import Footer from "./footer";
+import Navbar from "./navbar";
+import GuiaTamanhos from "./guiatamanhos";
 import { verificarFavorito, adicionarFavorito, removerFavorito } from './api';
 import { adicionarAoCarrinho } from './cart';
 import { Heart, Truck, RotateCcw, ShieldCheck } from "lucide-react";

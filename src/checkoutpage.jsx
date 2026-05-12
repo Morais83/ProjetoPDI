@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import Footer from "./Footer";
-import Navbar from "./Navbar";
+import Footer from "./footer";
+import Navbar from "./navbar";
 import { getCarrinho, limparCarrinho } from './cart';
 import { criarEncomenda } from './api';
 import { 

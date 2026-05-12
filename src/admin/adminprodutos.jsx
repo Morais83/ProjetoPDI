@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import AdminLayout from "./AdminLayout";
+﻿import { useState, useEffect } from "react";
+import AdminLayout from "./adminlayout";
 import { getProdutos, criarProduto, editarProduto, eliminarProduto } from "../api";
 import { Search } from "lucide-react";
 
