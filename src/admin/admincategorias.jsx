@@ -184,7 +184,7 @@ export default function AdminCategorias() {
 
               <div className="bg-[#F0F5EE] h-60 flex items-center justify-center relative p-4 shrink-0">
                 {cat.imagem ? (
-                  <img src={cat.imagem} alt={cat.nome_categoria} className="w-full h-full object-contain" />
+                  <img loading="lazy" src={cat.imagem} alt={cat.nome_categoria} className="w-full h-full object-contain" />
                 ) : (
                   <span style={serif} className="text-5xl font-semibold text-[#3D6B4A]">
                     {cat.nome_categoria.charAt(0)}
@@ -232,7 +232,7 @@ export default function AdminCategorias() {
                 <div className="border border-[#E8F0E6] rounded-lg p-2">
                   {form.imagem ? (
                     <div className="relative">
-                      <img src={form.imagem} alt="Preview" className="w-full h-32 object-cover rounded" />
+                      <img loading="lazy" src={form.imagem} alt="Preview" className="w-full h-32 object-cover rounded" />
                       <button
                         type="button"
                         onClick={removerImagem}

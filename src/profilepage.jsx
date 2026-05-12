@@ -68,7 +68,7 @@ function FavoritosSecao({ serif }) {
                 <div className="bg-white rounded-xl overflow-hidden border border-[#E8F0E6] hover:shadow-lg hover:shadow-green-100 transition-all group">
                   <div className="bg-[#F0F5EE] h-36 flex items-center justify-center overflow-hidden">
                     {prod.imagem_url
-                      ? <img src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      ? <img loading="lazy" src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       : <ShoppingBag size={40} className="text-[#C8DFC4]" />
                     }
                   </div>
@@ -184,10 +184,6 @@ export default function ProfilePage() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
     carregarPerfil();
   }, []);
 
@@ -615,7 +611,7 @@ export default function ProfilePage() {
                   >
                     <div className="w-12 h-12 bg-[#F0F5EE] rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {l.imagem_url
-                        ? <img src={l.imagem_url} alt="" className="w-full h-full object-cover" />
+                        ? <img loading="lazy" src={l.imagem_url} alt="" className="w-full h-full object-cover" />
                         : <Package size={24} className="text-[#C8DFC4]" />
                       }
                     </div>

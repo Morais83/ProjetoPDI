@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { registar } from './api';
 
@@ -12,13 +12,6 @@ export default function RegisterPage() {
   });
   const [erro, setErro] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
-  }, []);
 
   const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
   const sans = { fontFamily: "'Jost', sans-serif" };
@@ -232,7 +225,7 @@ export default function RegisterPage() {
       {/* Lado Direito: Imagem */}
       <div className="hidden md:block w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#3D6B4A]/10 z-10" />
-        <img 
+        <img loading="lazy" 
           src="/fundologin.png" 
           alt="Register Background" 
           className="absolute inset-0 w-full h-full object-cover"

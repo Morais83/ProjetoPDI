@@ -67,10 +67,6 @@ function CheckoutInner() {
   const token = localStorage.getItem('token');
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
     setCarrinho(getCarrinho());
     if (token) carregarMoradas();
     else navigate('/login');
@@ -366,7 +362,7 @@ function CheckoutInner() {
                 <div key={p.id_variante} className="flex items-center gap-3">
                   <div className="w-14 h-14 rounded-lg overflow-hidden bg-[#F0F5EE] flex-shrink-0 border border-[#E8F0E6]">
                     {p.imagem_url
-                      ? <img src={p.imagem_url} alt={p.nome_produto} className="w-full h-full object-cover" />
+                      ? <img loading="lazy" src={p.imagem_url} alt={p.nome_produto} className="w-full h-full object-cover" />
                       : <div className="w-full h-full flex items-center justify-center bg-[#F0F5EE] text-[#C8DFC4]"><Camera size={20} /></div>
                     }
                   </div>

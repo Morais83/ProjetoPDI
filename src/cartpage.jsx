@@ -21,10 +21,6 @@ export default function CartPage() {
   const [produtos, setProdutos] = useState([]);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel = "stylesheet";
-    document.head.appendChild(link);
     carregarCarrinho();
   }, []);
 
@@ -88,7 +84,7 @@ export default function CartPage() {
                   <Link to={`/produto/${prod.id_produto}`} onClick={() => window.scrollTo(0, 0)}>
                     <div className="w-24 h-28 rounded-xl flex-shrink-0 overflow-hidden bg-[#F0F5EE]">
                       {prod.imagem_url
-                        ? <img src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover hover:opacity-80 transition-opacity" />
+                        ? <img loading="lazy" src={prod.imagem_url} alt={prod.nome_produto} className="w-full h-full object-cover hover:opacity-80 transition-opacity" />
                         : <div className="w-full h-full flex items-center justify-center text-[#C8DFC4]"><Camera size={32} /></div>
                       }
                     </div>

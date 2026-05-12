@@ -145,10 +145,6 @@ export default function HelpPage() {
   }, [location]);
 
   useEffect(() => {
-    const link = document.createElement("link");
-    link.href = "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-    link.rel  = "stylesheet";
-    document.head.appendChild(link);
   }, []);
 
   const topicoAtual = topicos.find((t) => t.id === topicoAtivo) || topicos[0];
