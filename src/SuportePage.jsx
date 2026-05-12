@@ -338,7 +338,7 @@ export default function SuportePage() {
               </div>
 
               {/* Cards topo */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Mensagens */}
                 <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
                   <div className="flex items-center justify-between mb-5">

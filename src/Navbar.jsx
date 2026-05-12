@@ -314,6 +314,7 @@ export default function Navbar() {
         {/* Rodapé drawer */}
         <div className="border-t border-[#E8F0E6] p-5 space-y-2">
           {utilizador ? (
+            utilizador.perfil === 'admin' ? null : (
             <>
               <Link to="/perfil" onClick={fecharTudo}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#2C3A2C] hover:bg-[#F0F5EE] transition-colors">
@@ -332,6 +333,7 @@ export default function Navbar() {
                 Sair
               </button>
             </>
+            )
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <Link to="/login" onClick={fecharTudo}

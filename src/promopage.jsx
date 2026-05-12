@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import { SlidersHorizontal, X } from "lucide-react";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -19,7 +20,13 @@ export default function PromoPage() {
   const [ordenacao, setOrdenacao] = useState("desconto");
   const [precoMin, setPrecoMin] = useState(0);
   const [precoMax, setPrecoMax] = useState(500);
+  // inputs locais — debounced para não causar saltos no layout
+  const [inputMin, setInputMin] = useState("0");
+  const [inputMax, setInputMax] = useState("500");
   const [loading, setLoading] = useState(true);
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false);
+  const debounceMin = useRef(null);
+  const debounceMax = useRef(null);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -40,6 +47,29 @@ export default function PromoPage() {
     }
     setLoading(false);
   };
+
+  const handleInputMin = (val) => {
+    setInputMin(val);
+    clearTimeout(debounceMin.current);
+    debounceMin.current = setTimeout(() => setPrecoMin(Number(val) || 0), 400);
+  };
+
+  const handleInputMax = (val) => {
+    setInputMax(val);
+    clearTimeout(debounceMax.current);
+    debounceMax.current = setTimeout(() => setPrecoMax(Number(val) || 500), 400);
+  };
+
+  const limparFiltros = () => {
+    setCategoriaAtiva("Todas");
+    setMarcaAtiva("Todas");
+    setPrecoMin(0);
+    setPrecoMax(500);
+    setInputMin("0");
+    setInputMax("500");
+  };
+
+  const temFiltrosAtivos = categoriaAtiva !== "Todas" || marcaAtiva !== "Todas" || precoMin > 0 || precoMax < 500;
 
   const categorias = ["Todas", ...new Set(produtos.map(p => p.nome_categoria).filter(Boolean))];
   const marcas = ["Todas", ...new Set(produtos.map(p => p.nome_marca).filter(Boolean))];
@@ -80,100 +110,78 @@ export default function PromoPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-8 pb-16 flex gap-8 items-start">
+      {/* Overlay mobile para filtros */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 md:hidden ${filtrosAbertos ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        onClick={() => setFiltrosAbertos(false)}
+      />
 
-        {/* Sidebar */}
-        <div className="w-48 flex-shrink-0">
-
-          {/* Ordenação */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Ordenar por</p>
-            <div className="flex flex-col gap-1.5">
-              {ordenacoes.map(op => (
-                <button key={op.id} onClick={() => setOrdenacao(op.id)}
-                  className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all ${
-                    ordenacao === op.id ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
-                  }`}>
-                  {op.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Categorias */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Categoria</p>
-            <div className="flex flex-col gap-1">
-              {categorias.map(cat => (
-                <button key={cat} onClick={() => setCategoriaAtiva(cat)}
-                  className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all flex items-center justify-between ${
-                    categoriaAtiva === cat ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
-                  }`}>
-                  <span>{cat}</span>
-                  {cat !== "Todas" && (
-                    <span className={`text-[10px] ${categoriaAtiva === cat ? "text-white opacity-70" : "text-[#8FAF8A]"}`}>
-                      {produtos.filter(p => p.nome_categoria === cat).length}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Marca */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
-            <div className="flex flex-col gap-1">
-              {marcas.map(m => (
-                <button key={m} onClick={() => setMarcaAtiva(m)}
-                  className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all ${
-                    marcaAtiva === m ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
-                  }`}>
-                  {m}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Preço */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white">
-                <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
-                <div className="flex items-center">
-                  <input type="number" min="0" value={precoMin}
-                    onChange={e => setPrecoMin(Number(e.target.value))}
-                    className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                  <span className="text-xs text-[#8FAF8A]">€</span>
-                </div>
-              </div>
-              <span className="text-xs text-[#C8DFC4]">—</span>
-              <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white">
-                <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
-                <div className="flex items-center">
-                  <input type="number" max="500" value={precoMax}
-                    onChange={e => setPrecoMax(Number(e.target.value))}
-                    className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                  <span className="text-xs text-[#8FAF8A]">€</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {(categoriaAtiva !== "Todas" || marcaAtiva !== "Todas" || precoMin > 0 || precoMax < 500) && (
-            <button onClick={() => { setCategoriaAtiva("Todas"); setMarcaAtiva("Todas"); setPrecoMin(0); setPrecoMax(500); }}
-              className="w-full text-xs text-[#C0392B] border border-[#FDECEA] bg-[#FDECEA] py-2 rounded-lg hover:bg-[#C0392B] hover:text-white transition-all">
+      {/* Drawer de filtros mobile */}
+      <div className={`fixed top-0 left-0 h-full w-[80vw] max-w-xs z-50 bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out md:hidden ${filtrosAbertos ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E8F0E6]">
+          <p className="text-sm font-semibold tracking-widest uppercase text-[#2C3A2C]">Filtros</p>
+          <button onClick={() => setFiltrosAbertos(false)} className="p-1 text-[#8FAF8A] hover:text-[#3D6B4A] transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <SidebarFiltros
+            ordenacoes={ordenacoes} ordenacao={ordenacao} setOrdenacao={setOrdenacao}
+            categorias={categorias} categoriaAtiva={categoriaAtiva} setCategoriaAtiva={setCategoriaAtiva}
+            marcas={marcas} marcaAtiva={marcaAtiva} setMarcaAtiva={setMarcaAtiva}
+            inputMin={inputMin} inputMax={inputMax}
+            handleInputMin={handleInputMin} handleInputMax={handleInputMax}
+            temFiltrosAtivos={temFiltrosAtivos} limparFiltros={limparFiltros}
+            produtos={produtos}
+          />
+        </div>
+        {temFiltrosAtivos && (
+          <div className="px-5 pb-5">
+            <button onClick={() => { limparFiltros(); setFiltrosAbertos(false); }}
+              className="w-full text-xs text-[#C0392B] border border-[#FDECEA] bg-[#FDECEA] py-2.5 rounded-lg hover:bg-[#C0392B] hover:text-white transition-all">
               Limpar filtros
             </button>
-          )}
+          </div>
+        )}
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pb-16 flex gap-8 items-start">
+
+        {/* Sidebar desktop */}
+        <div className="hidden md:block w-48 flex-shrink-0">
+          <SidebarFiltros
+            ordenacoes={ordenacoes} ordenacao={ordenacao} setOrdenacao={setOrdenacao}
+            categorias={categorias} categoriaAtiva={categoriaAtiva} setCategoriaAtiva={setCategoriaAtiva}
+            marcas={marcas} marcaAtiva={marcaAtiva} setMarcaAtiva={setMarcaAtiva}
+            inputMin={inputMin} inputMax={inputMax}
+            handleInputMin={handleInputMin} handleInputMax={handleInputMax}
+            temFiltrosAtivos={temFiltrosAtivos} limparFiltros={limparFiltros}
+            produtos={produtos}
+          />
         </div>
 
         {/* Conteúdo */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-xs text-[#8FAF8A] mb-6">
             Promoções / <span className="text-[#3D6B4A]">{produtosFiltrados.length} resultados</span>
           </p>
+
+          {/* Botão filtros mobile */}
+          <div className="flex items-center justify-between mb-4 md:hidden">
+            <button
+              onClick={() => setFiltrosAbertos(true)}
+              className="flex items-center gap-2 border border-[#C8DFC4] rounded-lg px-4 py-2 text-xs text-[#3D6B4A] bg-white hover:bg-[#F0F5EE] transition-all"
+            >
+              <SlidersHorizontal size={14} />
+              Filtros
+              {temFiltrosAtivos && <span className="w-4 h-4 rounded-full bg-[#3D6B4A] text-white text-[9px] flex items-center justify-center">!</span>}
+            </button>
+            {temFiltrosAtivos && (
+              <button onClick={limparFiltros} className="text-xs text-[#C0392B] hover:underline">
+                Limpar filtros
+              </button>
+            )}
+          </div>
 
           {loading ? (
             <p className="text-sm text-[#8FAF8A]">A carregar promoções...</p>
@@ -216,6 +224,103 @@ export default function PromoPage() {
       </div>
 
       <Footer />
+    </div>
+  );
+}
+
+// ─── Sidebar de filtros (partilhada entre desktop e drawer mobile) ────────────
+
+function SidebarFiltros({
+  ordenacoes, ordenacao, setOrdenacao,
+  categorias, categoriaAtiva, setCategoriaAtiva,
+  marcas, marcaAtiva, setMarcaAtiva,
+  inputMin, inputMax, handleInputMin, handleInputMax,
+  temFiltrosAtivos, limparFiltros, produtos,
+}) {
+  return (
+    <div>
+      {/* Ordenação */}
+      <div className="mb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Ordenar por</p>
+        <div className="flex flex-col gap-1.5">
+          {ordenacoes.map(op => (
+            <button key={op.id} onClick={() => setOrdenacao(op.id)}
+              className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all ${
+                ordenacao === op.id ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
+              }`}>
+              {op.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Categorias */}
+      <div className="mb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Categoria</p>
+        <div className="flex flex-col gap-1">
+          {categorias.map(cat => (
+            <button key={cat} onClick={() => setCategoriaAtiva(cat)}
+              className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all flex items-center justify-between ${
+                categoriaAtiva === cat ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
+              }`}>
+              <span>{cat}</span>
+              {cat !== "Todas" && (
+                <span className={`text-[10px] ${categoriaAtiva === cat ? "text-white opacity-70" : "text-[#8FAF8A]"}`}>
+                  {produtos.filter(p => p.nome_categoria === cat).length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Marca */}
+      <div className="mb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
+        <div className="flex flex-col gap-1">
+          {marcas.map(m => (
+            <button key={m} onClick={() => setMarcaAtiva(m)}
+              className={`text-left text-xs py-1.5 px-3 rounded-lg transition-all ${
+                marcaAtiva === m ? "bg-[#3D6B4A] text-white" : "text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A]"
+              }`}>
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Preço */}
+      <div className="mb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
+            <div className="flex items-center">
+              <input type="number" min="0" value={inputMin}
+                onChange={e => handleInputMin(e.target.value)}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+          <span className="text-xs text-[#C8DFC4]">—</span>
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
+            <div className="flex items-center">
+              <input type="number" max="9999" value={inputMax}
+                onChange={e => handleInputMax(e.target.value)}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {temFiltrosAtivos && (
+        <button onClick={limparFiltros}
+          className="hidden md:block w-full text-xs text-[#C0392B] border border-[#FDECEA] bg-[#FDECEA] py-2 rounded-lg hover:bg-[#C0392B] hover:text-white transition-all">
+          Limpar filtros
+        </button>
+      )}
     </div>
   );
 }

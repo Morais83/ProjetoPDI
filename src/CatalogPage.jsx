@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
@@ -41,9 +41,13 @@ export default function CatalogPage() {
   const [marcaPesquisa, setMarcaPesquisa]               = useState("");
   const [precoMin, setPrecoMin]         = useState(0);
   const [precoMax, setPrecoMax]         = useState(500);
+  const [inputMin, setInputMin]         = useState("0");
+  const [inputMax, setInputMax]         = useState("500");
   const [loading, setLoading]           = useState(true);
   const [ordenacao, setOrdenacao]       = useState("recentes");
   const [filtroDrawer, setFiltroDrawer] = useState(false);
+  const debounceMin = useRef(null);
+  const debounceMax = useRef(null);
 
   useEffect(() => {
     const link = document.createElement("link");
@@ -88,12 +92,26 @@ export default function CatalogPage() {
   const toggleCor = (c) =>
     setCoresSelecionadas(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
+  const handleInputMin = (val) => {
+    setInputMin(val);
+    clearTimeout(debounceMin.current);
+    debounceMin.current = setTimeout(() => setPrecoMin(Number(val) || 0), 400);
+  };
+
+  const handleInputMax = (val) => {
+    setInputMax(val);
+    clearTimeout(debounceMax.current);
+    debounceMax.current = setTimeout(() => setPrecoMax(Number(val) || 500), 400);
+  };
+
   const limparFiltros = () => {
     setTamanhosSelecionados([]);
     setCoresSelecionadas([]);
     setMarcaPesquisa("");
     setPrecoMin(0);
     setPrecoMax(500);
+    setInputMin("0");
+    setInputMax("500");
     setOrdenacao("recentes");
   };
 
@@ -162,91 +180,13 @@ export default function CatalogPage() {
     else setSearchParams(departamento ? { departamento, categoria: cat } : { categoria: cat });
   };
 
-  // Conteúdo dos filtros (reutilizado em desktop sidebar e mobile drawer)
-  const FiltrosConteudo = () => (
-    <div className="space-y-6">
-      {filtrosAtivos > 0 && (
-        <button onClick={limparFiltros}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#3D6B4A] text-white text-xs tracking-wide hover:bg-[#2C5038] transition-all">
-          <span>Limpar filtros</span>
-          <span className="bg-white text-[#3D6B4A] rounded-full w-5 h-5 flex items-center justify-center font-semibold text-[10px]">{filtrosAtivos}</span>
-        </button>
-      )}
-
-      {tamanhosDisponiveis.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Tamanho</p>
-          <div className="flex flex-wrap gap-2">
-            {tamanhosDisponiveis.map(t => (
-              <button key={t} onClick={() => toggleTamanho(t)}
-                className={`px-2 h-9 rounded-lg border text-xs font-medium transition-all ${
-                  tamanhosSelecionados.includes(t)
-                    ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
-                    : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
-                }`}>{t}</button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {coresDisponiveis.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Cor</p>
-          <div className="flex flex-col gap-1.5">
-            {coresDisponiveis.map(c => {
-              const hex = HEX_CORES[capitalizar(c)];
-              const ativo = coresSelecionadas.includes(c);
-              return (
-                <button key={c} onClick={() => toggleCor(c)}
-                  className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-lg transition-all text-left ${ativo ? "bg-[#E8F0E6]" : "hover:bg-[#F7F9F5]"}`}>
-                  <span className="relative flex-shrink-0">
-                    <span className={`block w-6 h-6 rounded-full border-2 transition-all ${ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"} ${!hex ? "bg-gradient-to-br from-pink-300 via-yellow-200 to-blue-300" : ""}`}
-                      style={hex ? { background: hex } : {}} />
-                    {ativo && <span className="absolute inset-0 flex items-center justify-center"><span className={`text-[9px] font-bold ${hex === "#f0f0f0" || hex === "#facc15" || hex === "#f5f0e8" ? "text-[#3D6B4A]" : "text-white"}`}>✓</span></span>}
-                  </span>
-                  <span className={`text-xs transition-colors ${ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"}`}>{capitalizar(c)}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      <div>
-        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
-        <div className="flex items-center border border-[#C8DFC4] rounded-lg px-3 py-2 bg-white gap-2 focus-within:border-[#3D6B4A] transition-colors">
-          <Search size={14} strokeWidth={1.5} className="text-[#8FAF8A]" />
-          <input type="text" placeholder="Pesquisar por marca" value={marcaPesquisa}
-            onChange={e => setMarcaPesquisa(e.target.value)}
-            className="text-xs outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full" />
-          {marcaPesquisa && <button onClick={() => setMarcaPesquisa("")} className="text-[#C8DFC4] hover:text-[#3D6B4A] text-xs">✕</button>}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
-        <div className="flex items-center gap-2">
-          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
-            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
-            <div className="flex items-center">
-              <input type="number" min="0" max={precoMax} value={precoMin} onChange={e => setPrecoMin(Number(e.target.value))}
-                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-              <span className="text-xs text-[#8FAF8A]">€</span>
-            </div>
-          </div>
-          <span className="text-xs text-[#C8DFC4]">—</span>
-          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
-            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
-            <div className="flex items-center">
-              <input type="number" min={precoMin} max="9999" value={precoMax} onChange={e => setPrecoMax(Number(e.target.value))}
-                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-              <span className="text-xs text-[#8FAF8A]">€</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const filtrosProps = {
+    filtrosAtivos, limparFiltros,
+    tamanhosDisponiveis, tamanhosSelecionados, toggleTamanho,
+    coresDisponiveis, coresSelecionadas, toggleCor,
+    marcaPesquisa, setMarcaPesquisa,
+    inputMin, inputMax, handleInputMin, handleInputMax,
+  };
 
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
@@ -261,7 +201,7 @@ export default function CatalogPage() {
           <button onClick={() => setFiltroDrawer(false)} className="p-1 text-[#8FAF8A] hover:text-[#3D6B4A]"><X size={20} /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-5">
-          <FiltrosConteudo />
+          <FiltrosConteudo {...filtrosProps} />
         </div>
         <div className="p-4 border-t border-[#E8F0E6]">
           <button onClick={() => setFiltroDrawer(false)}
@@ -286,7 +226,7 @@ export default function CatalogPage() {
 
         {/* ── Sidebar desktop ── */}
         <div className="hidden md:block w-52 flex-shrink-0 space-y-6">
-          <FiltrosConteudo />
+          <FiltrosConteudo {...filtrosProps} />
         </div>
 
         {/* ── Conteúdo ── */}
@@ -451,6 +391,103 @@ export default function CatalogPage() {
         </div>
       </div>
       <Footer />
+    </div>
+  );
+}
+
+// ─── Componente de filtros extraído para evitar re-mount ao digitar ───────────
+
+function FiltrosConteudo({
+  filtrosAtivos, limparFiltros,
+  tamanhosDisponiveis, tamanhosSelecionados, toggleTamanho,
+  coresDisponiveis, coresSelecionadas, toggleCor,
+  marcaPesquisa, setMarcaPesquisa,
+  inputMin, inputMax, handleInputMin, handleInputMax,
+}) {
+  return (
+    <div className="space-y-6">
+      {filtrosAtivos > 0 && (
+        <button onClick={limparFiltros}
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#3D6B4A] text-white text-xs tracking-wide hover:bg-[#2C5038] transition-all">
+          <span>Limpar filtros</span>
+          <span className="bg-white text-[#3D6B4A] rounded-full w-5 h-5 flex items-center justify-center font-semibold text-[10px]">{filtrosAtivos}</span>
+        </button>
+      )}
+
+      {tamanhosDisponiveis.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Tamanho</p>
+          <div className="flex flex-wrap gap-2">
+            {tamanhosDisponiveis.map(t => (
+              <button key={t} onClick={() => toggleTamanho(t)}
+                className={`px-2 h-9 rounded-lg border text-xs font-medium transition-all ${
+                  tamanhosSelecionados.includes(t)
+                    ? "border-[#3D6B4A] bg-[#3D6B4A] text-white"
+                    : "border-[#C8DFC4] bg-white text-[#4A5C4A] hover:border-[#3D6B4A]"
+                }`}>{t}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {coresDisponiveis.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Cor</p>
+          <div className="flex flex-col gap-1.5">
+            {coresDisponiveis.map(c => {
+              const hex = HEX_CORES[capitalizar(c)];
+              const ativo = coresSelecionadas.includes(c);
+              return (
+                <button key={c} onClick={() => toggleCor(c)}
+                  className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-lg transition-all text-left ${ativo ? "bg-[#E8F0E6]" : "hover:bg-[#F7F9F5]"}`}>
+                  <span className="relative flex-shrink-0">
+                    <span className={`block w-6 h-6 rounded-full border-2 transition-all ${ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"} ${!hex ? "bg-gradient-to-br from-pink-300 via-yellow-200 to-blue-300" : ""}`}
+                      style={hex ? { background: hex } : {}} />
+                    {ativo && <span className="absolute inset-0 flex items-center justify-center"><span className={`text-[9px] font-bold ${hex === "#f0f0f0" || hex === "#facc15" || hex === "#f5f0e8" ? "text-[#3D6B4A]" : "text-white"}`}>✓</span></span>}
+                  </span>
+                  <span className={`text-xs transition-colors ${ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"}`}>{capitalizar(c)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Marca</p>
+        <div className="flex items-center border border-[#C8DFC4] rounded-lg px-3 py-2 bg-white gap-2 focus-within:border-[#3D6B4A] transition-colors">
+          <Search size={14} strokeWidth={1.5} className="text-[#8FAF8A]" />
+          <input type="text" placeholder="Pesquisar por marca" value={marcaPesquisa}
+            onChange={e => setMarcaPesquisa(e.target.value)}
+            className="text-xs outline-none bg-transparent text-[#4A5C4A] placeholder:text-[#C8DFC4] w-full" />
+          {marcaPesquisa && <button onClick={() => setMarcaPesquisa("")} className="text-[#C8DFC4] hover:text-[#3D6B4A] text-xs">✕</button>}
+        </div>
+      </div>
+
+      <div>
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Preço</p>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Mín</p>
+            <div className="flex items-center">
+              <input type="number" min="0" value={inputMin}
+                onChange={e => handleInputMin(e.target.value)}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+          <span className="text-xs text-[#C8DFC4]">—</span>
+          <div className="flex-1 border border-[#C8DFC4] rounded-lg px-2 py-1.5 bg-white focus-within:border-[#3D6B4A] transition-colors">
+            <p className="text-[10px] text-[#8FAF8A] mb-0.5">Máx</p>
+            <div className="flex items-center">
+              <input type="number" max="9999" value={inputMax}
+                onChange={e => handleInputMax(e.target.value)}
+                className="w-full text-xs text-[#2C3A2C] outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+              <span className="text-xs text-[#8FAF8A]">€</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
