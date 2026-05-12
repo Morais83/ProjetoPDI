@@ -21,6 +21,7 @@ import PromoPage from "./promopage";
 import ResetPasswordPage from './resetpasswordpage';
 import SuportePage from './SuportePage';
 import AdminSuporte from './admin/AdminSuporte';
+import AdminDashboard from './admin/AdminDashboard';
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/produto/:id" element={<ProductPage />} />
         <Route path="/catalogo" element={<CatalogPage />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/categorias" element={<AdminCategorias />} />
         <Route path="/admin/produtos" element={<AdminProdutos />} />
         <Route path="/admin/encomendas" element={<AdminEncomendas />} />

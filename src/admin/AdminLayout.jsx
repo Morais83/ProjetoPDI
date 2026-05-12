@@ -10,6 +10,7 @@ const sans  = { fontFamily: "'Jost', sans-serif" };
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 
 const links = [
+  { label: "Dashboard",     path: "/admin",               icon: LayoutDashboard },
   { label: "Categorias",    path: "/admin/categorias",    icon: Tag         },
   { label: "Marcas",        path: "/admin/marcas",        icon: Award       },
   { label: "Produtos",      path: "/admin/produtos",      icon: Package     },
@@ -69,7 +70,9 @@ export default function AdminLayout({ children }) {
       <nav className="flex-1 px-3 py-5 flex flex-col gap-0.5 overflow-y-auto">
         <p className="text-[10px] text-[#6B9E63] uppercase tracking-widest font-semibold px-3 mb-2">Menu</p>
         {links.map(({ label, path, icon: Icon }) => {
-          const ativo = location.pathname === path;
+          const ativo = path === "/admin"
+            ? location.pathname === "/admin"
+            : location.pathname === path;
           return (
             <Link key={path} to={path}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group ${
