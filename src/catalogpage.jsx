@@ -132,9 +132,20 @@ export default function CatalogPage() {
 
   // ── Cores e tamanhos disponíveis (dinâmicos, baseados nos produtos visíveis) ──
   const coresDisponiveis = useMemo(() => {
-    const set = new Set();
-    produtosBase.forEach(p => parseLista(p.cores_disponiveis).forEach(c => set.add(c)));
-    return [...set].sort();
+    const mapaCores = new Map();
+    
+    produtosBase.forEach(p => {
+      const nomes = parseLista(p.cores_disponiveis);
+      const hexs = parseLista(p.hex_disponiveis); 
+      
+      nomes.forEach((nome, idx) => {
+        if (!mapaCores.has(nome)) {
+          mapaCores.set(nome, hexs[idx] || "#E8F0E6");
+        }
+      });
+    });
+
+    return Array.from(mapaCores.entries()).map(([nome, hex]) => ({ nome, hex }));
   }, [produtosBase]);
 
   const tamanhosDisponiveis = useMemo(() => {
@@ -430,18 +441,25 @@ function FiltrosConteudo({
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#2C3A2C] mb-3">Cor</p>
           <div className="flex flex-col gap-1.5">
-            {coresDisponiveis.map(c => {
-              const hex = HEX_CORES[capitalizar(c)];
-              const ativo = coresSelecionadas.includes(c);
+            {coresDisponiveis.map(({ nome, hex }) => {
+              const ativo = coresSelecionadas.includes(nome);
               return (
-                <button key={c} onClick={() => toggleCor(c)}
+                <button key={nome} onClick={() => toggleCor(nome)}
                   className={`flex items-center gap-3 w-full px-2 py-1.5 rounded-lg transition-all text-left ${ativo ? "bg-[#E8F0E6]" : "hover:bg-[#F7F9F5]"}`}>
                   <span className="relative flex-shrink-0">
-                    <span className={`block w-6 h-6 rounded-full border-2 transition-all ${ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"} ${!hex ? "bg-gradient-to-br from-pink-300 via-yellow-200 to-blue-300" : ""}`}
-                      style={hex ? { background: hex } : {}} />
-                    {ativo && <span className="absolute inset-0 flex items-center justify-center"><span className={`text-[9px] font-bold ${hex === "#f0f0f0" || hex === "#facc15" || hex === "#f5f0e8" ? "text-[#3D6B4A]" : "text-white"}`}>✓</span></span>}
+                    <span 
+                      className={`block w-6 h-6 rounded-full border-2 transition-all ${ativo ? "border-[#3D6B4A] scale-110" : "border-[#D1D5DB]"}`}
+                      style={{ background: hex }} 
+                    />
+                    {ativo && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-white text-[9px] font-bold">✓</span>
+                      </span>
+                    )}
                   </span>
-                  <span className={`text-xs transition-colors ${ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"}`}>{capitalizar(c)}</span>
+                  <span className={`text-xs transition-colors ${ativo ? "text-[#3D6B4A] font-semibold" : "text-[#4A5C4A]"}`}>
+                    {capitalizar(nome)}
+                  </span>
                 </button>
               );
             })}

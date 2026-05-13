@@ -16,6 +16,11 @@ router.get('/', async (req, res) => {
               FROM variante v
               WHERE v.id_produto = p.id_produto
                 AND v.cor IS NOT NULL AND v.cor != '') AS cores_disponiveis,
+             -- NOVO: Campo para buscar os códigos HEX da base de dados
+             (SELECT GROUP_CONCAT(DISTINCT v.hex_cor ORDER BY v.cor SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto
+                AND v.cor IS NOT NULL AND v.cor != '') AS hex_disponiveis,
              (SELECT GROUP_CONCAT(DISTINCT v.tamanho ORDER BY v.tamanho SEPARATOR ',')
               FROM variante v
               WHERE v.id_produto = p.id_produto) AS tamanhos_disponiveis
@@ -47,6 +52,11 @@ router.get('/pesquisa', async (req, res) => {
               FROM variante v
               WHERE v.id_produto = p.id_produto
                 AND v.cor IS NOT NULL AND v.cor != '') AS cores_disponiveis,
+             -- NOVO: Campo para buscar os códigos HEX na pesquisa também
+             (SELECT GROUP_CONCAT(DISTINCT v.hex_cor ORDER BY v.cor SEPARATOR ',')
+              FROM variante v
+              WHERE v.id_produto = p.id_produto
+                AND v.cor IS NOT NULL AND v.cor != '') AS hex_disponiveis,
              (SELECT GROUP_CONCAT(DISTINCT v.tamanho ORDER BY v.tamanho SEPARATOR ',')
               FROM variante v
               WHERE v.id_produto = p.id_produto) AS tamanhos_disponiveis
@@ -156,7 +166,6 @@ router.post('/', async (req, res) => {
 });
 
 // ── PUT editar produto ────────────────────────────────────────────────────────
-// Usa transação + merge de variantes para não quebrar FK de encomendas.
 router.put('/:id', async (req, res) => {
   const id_produto = req.params.id;
   const { id_categoria, id_marca, nome_produto, preco, preco_anterior,
@@ -166,7 +175,6 @@ router.put('/:id', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1. Atualiza campos do produto
     await conn.query(
       `UPDATE produtos
        SET id_categoria=?, id_marca=?, nome_produto=?, preco=?,
@@ -176,7 +184,6 @@ router.put('/:id', async (req, res) => {
        preco_anterior || null, descricao, materiais, guia_cuidados, stock, id_produto]
     );
 
-    // 2. Imagens — substitui totalmente (sem FK de encomendas → seguro)
     if (imagens !== undefined) {
       await conn.query('DELETE FROM imagens_produto WHERE id_produto = ?', [id_produto]);
       for (const img of (imagens || [])) {
@@ -187,25 +194,21 @@ router.put('/:id', async (req, res) => {
       }
     }
 
-    // 3. Variantes — merge para preservar id_variante referenciado em encomendas
     if (variantes !== undefined) {
       const novasVariantes = (variantes || []).map(v => ({
         ...v,
         cor: (v.cor || '').trim(),
       }));
 
-      // IDs das variantes que vamos manter/atualizar
       const idsKeep = [];
 
       for (const v of novasVariantes) {
-        // Procura variante existente com mesmo tamanho+cor
         const [existe] = await conn.query(
           'SELECT id_variante FROM variante WHERE id_produto=? AND tamanho=? AND cor=?',
           [id_produto, v.tamanho, v.cor]
         );
 
         if (existe.length > 0) {
-          // Atualiza stock e hex sem alterar o id_variante
           const idV = existe[0].id_variante;
           await conn.query(
             'UPDATE variante SET hex_cor=?, stock_variante=? WHERE id_variante=?',
@@ -213,7 +216,6 @@ router.put('/:id', async (req, res) => {
           );
           idsKeep.push(idV);
         } else {
-          // Insere nova variante
           const [ins] = await conn.query(
             'INSERT INTO variante (id_produto, tamanho, cor, hex_cor, stock_variante) VALUES (?,?,?,?,?)',
             [id_produto, v.tamanho, v.cor, v.hex_cor || null, v.stock_variante || 0]
@@ -222,9 +224,6 @@ router.put('/:id', async (req, res) => {
         }
       }
 
-      // Remove variantes que:
-      // • não estão na nova lista E
-      // • não têm encomendas associadas (seguro apagar)
       if (idsKeep.length > 0) {
         await conn.query(
           `DELETE FROM variante
@@ -234,7 +233,6 @@ router.put('/:id', async (req, res) => {
           [id_produto, idsKeep]
         );
       } else {
-        // Sem variantes novas — apaga apenas as sem encomendas
         await conn.query(
           `DELETE FROM variante
            WHERE id_produto = ?
