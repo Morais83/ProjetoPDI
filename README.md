@@ -28,7 +28,7 @@ sudo apt install -y nodejs npm
 node -v
 npm -v
 
-# MySQL
+# MySQL 
 sudo apt install -y mysql-server
 sudo systemctl start mysql
 sudo systemctl enable mysql
