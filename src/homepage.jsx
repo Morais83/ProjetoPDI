@@ -45,9 +45,9 @@ export default function HomePage() {
 
         const categoriasAlvo = [
           { nome: "Vestidos",          bg: "bg-[#ECF3EA]" },
-          { nome: "Casacos",           bg: "bg-[#EEF5EC]" }, 
+          { nome: "Saltos altos",           bg: "bg-[#EEF5EC]" }, 
           { nome: "Blazers e coletes", bg: "bg-[#E4EEE2]" },
-          { nome: "Calças e Calções",  bg: "bg-[#E8F0E6]" },
+          { nome: "Malas de mão",  bg: "bg-[#E8F0E6]" },
         ];
 
         const categoriasComImagens = categoriasAlvo.map(catAlvo => {

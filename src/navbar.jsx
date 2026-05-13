@@ -9,7 +9,7 @@ const MENUS = {
   roupa: {
     label: "Roupa",
     base: "/catalogo?departamento=roupa",
-    items: ["Blusas","Vestidos","Sobretudos","Calças e Calções","Saias","T-shirt e Tops","Roupa de banho","Casacos","Sweatshirts e Hoodies","Malhas","Blazers e coletes","Roupa Interior","Macacões"],
+    items: ["Blusas","Vestidos","Sobretudos","Calças e Calções","Saias","T-shirt e Tops","Roupa de banho","Casacos","Sweatshirts e Hoodies","Malhas","Blazers e coletes","Macacões"],
   },
   calcado: {
     label: "Calçado",
@@ -19,7 +19,7 @@ const MENUS = {
   acessorios: {
     label: "Acessórios",
     base: "/catalogo?departamento=acessorios",
-    items: ["Malas de mão","Carteiras","Mochilas","Cintos","Chapéus","Lenços","Óculos de sol","Joalharia","Bijuteria"],
+    items: ["Malas de mão","Carteiras","Cintos","Lenços","Óculos de sol","Bijuteria"],
   },
 };
 
