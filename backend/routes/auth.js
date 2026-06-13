@@ -176,6 +176,25 @@ router.get('/perfil', require('../middleware/auth'), async (req, res) => {
   }
 });
 
+// VERIFICAR TOKEN DE RESET (usado pelo frontend ao carregar a página)
+router.post('/verificar-token-reset', async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ erro: 'Token em falta.' });
+
+  try {
+    const [rows] = await db.query(
+      'SELECT id_utilizador FROM utilizadores WHERE reset_token = ? AND reset_token_expira > NOW()',
+      [token]
+    );
+    if (rows.length === 0) {
+      return res.status(400).json({ erro: 'Token inválido ou expirado.' });
+    }
+    res.json({ valido: true });
+  } catch (err) {
+    res.status(500).json({ erro: 'Erro ao verificar token.' });
+  }
+});
+
 // GUARDAR PASSWORD
 router.post('/repor-senha', async (req, res) => {
   const { token, novaPassword } = req.body;

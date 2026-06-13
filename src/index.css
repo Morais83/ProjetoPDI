@@ -11,4 +11,7 @@
 * { -webkit-tap-highlight-color: transparent; }
 
 /* Mobile: evita scroll horizontal */
-body { overflow-x: hidden; }
+body { overflow-x: hidden; font-size: 16px; }
+
+/* Aumenta base dos tamanhos de texto Tailwind */
+html { font-size: 17px; }

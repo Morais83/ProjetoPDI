@@ -3,26 +3,47 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import { reporSenha } from './api';
 
 export default function ResetPasswordPage() {
-  const { token } = useParams(); // Apanha o código (token) que vem no URL
+  const { token } = useParams();
   const navigate = useNavigate();
-  
+
   const [novaPassword, setNovaPassword] = useState("");
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
+  const [tokenValido, setTokenValido] = useState(null); // null = a verificar
 
   const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
   const sans = { fontFamily: "'Jost', sans-serif" };
+
+  // Valida o token no backend ao carregar a página
+  useEffect(() => {
+    if (!token) { setTokenValido(false); return; }
+    fetch(`${import.meta.env.VITE_API_URL}/api/auth/verificar-token-reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    })
+      .then(r => r.json())
+      .then(d => setTokenValido(!d.erro))
+      .catch(() => setTokenValido(false));
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro("");
 
-    if (novaPassword.length < 6) {
-      setErro("A palavra-passe deve ter pelo menos 6 caracteres.");
+    if (novaPassword.length < 8) {
+      setErro("A palavra-passe deve ter pelo menos 8 caracteres.");
       return;
     }
-
+    if (!/[A-Z]/.test(novaPassword)) {
+      setErro("A palavra-passe deve ter pelo menos uma letra maiúscula.");
+      return;
+    }
+    if (!/[0-9]/.test(novaPassword)) {
+      setErro("A palavra-passe deve ter pelo menos um número.");
+      return;
+    }
     if (novaPassword !== confirmarPassword) {
       setErro("As palavras-passe não coincidem.");
       return;
@@ -50,7 +71,17 @@ export default function ResetPasswordPage() {
             <p className="text-sm text-[#5C6E5C]">Cria uma nova palavra-passe para a tua conta.</p>
           </div>
 
-          {sucesso ? (
+          {tokenValido === null ? (
+            <p className="text-sm text-[#8FAF8A]">A verificar link...</p>
+          ) : tokenValido === false ? (
+            <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-2xl text-center">
+              <p className="font-medium mb-2">Link inválido ou expirado</p>
+              <p className="text-sm mb-4">Este link de recuperação já não é válido. Por favor solicita um novo.</p>
+              <Link to="/login" className="text-xs tracking-widest uppercase text-[#3D6B4A] border-b border-[#3D6B4A]">
+                Voltar ao login
+              </Link>
+            </div>
+          ) : sucesso ? (
             <div className="bg-[#E8F0E6] text-[#3D6B4A] p-6 rounded-2xl text-center border border-[#C8DFC4]">
               <p className="font-medium mb-2">✓ Palavra-passe alterada!</p>
               <p className="text-sm">A redirecionar para o login...</p>

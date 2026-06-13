@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const db = require('./db');
+const adminAuth = require('./middleware/admin');
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use('/api/marcas', require('./routes/marcas'));
 app.use('/api/encomendas', require('./routes/encomendas'));
 app.use('/api/utilizadores', require('./routes/utilizadores'));
 app.use('/api/favoritos', require('./routes/favoritos'));
-app.use('/api/upload', require('./routes/upload'));
+app.use('/api/upload', adminAuth, require('./routes/upload'));
 app.use('/api/pagamentos', require('./routes/pagamentos'));
 app.use('/api/suporte', require('./routes/suporte'));
 

@@ -1,5 +1,4 @@
-﻿import { useEffect } from "react";
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import Navbar from "./navbar";
 import Footer from "./footer";
 import { Sparkles, Handshake, Heart, UserCheck } from "lucide-react";
@@ -38,11 +37,6 @@ const numeros = [
 ];
 
 export default function AboutPage() {
-  useEffect(() => {
-    link.href =
-      "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap";
-  }, []);
-
   return (
     <div style={sans} className="min-h-screen bg-[#F7F9F5] text-[#2C2C2C]">
       <Navbar />

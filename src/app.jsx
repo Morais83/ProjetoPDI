@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import HomePage from "./homepage";
 import LoginPage from "./loginpage";
@@ -23,6 +23,18 @@ import SuportePage from './suportepage';
 import AdminSuporte from './admin/adminsuporte';
 import AdminDashboard from './admin/admindashboard';
 
+function AdminRoute({ children }) {
+  try {
+    const utilizador = JSON.parse(localStorage.getItem('utilizador'));
+    if (!utilizador || utilizador.perfil !== 'admin') {
+      return <Navigate to="/login" replace />;
+    }
+  } catch {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 export default function App() {
   return (
     <Router>
@@ -32,12 +44,14 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/produto/:id" element={<ProductPage />} />
         <Route path="/catalogo" element={<CatalogPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/categorias" element={<AdminCategorias />} />
-        <Route path="/admin/produtos" element={<AdminProdutos />} />
-        <Route path="/admin/encomendas" element={<AdminEncomendas />} />
-        <Route path="/admin/utilizadores" element={<AdminUtilizadores />} />
-        <Route path="/admin/marcas" element={<AdminMarcas />} />
+        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        <Route path="/admin/categorias" element={<AdminRoute><AdminCategorias /></AdminRoute>} />
+        <Route path="/admin/produtos" element={<AdminRoute><AdminProdutos /></AdminRoute>} />
+        <Route path="/admin/encomendas" element={<AdminRoute><AdminEncomendas /></AdminRoute>} />
+        <Route path="/admin/utilizadores" element={<AdminRoute><AdminUtilizadores /></AdminRoute>} />
+        <Route path="/admin/marcas" element={<AdminRoute><AdminMarcas /></AdminRoute>} />
+        <Route path="/admin/suporte" element={<AdminRoute><AdminSuporte /></AdminRoute>} />
         <Route path="/perfil" element={<ProfilePage />} />
         <Route path="/ajuda" element={<HelpPage />} />
         <Route path="/sobre-nos" element={<AboutPage />} />
@@ -48,8 +62,6 @@ export default function App() {
         <Route path="/promocoes" element={<PromoPage />} />
         <Route path="/recuperar-senha/:token" element={<ResetPasswordPage />} />
         <Route path="/suporte" element={<SuportePage />} />
-        <Route path="/admin/suporte" element={<AdminSuporte />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </Router>
   );
