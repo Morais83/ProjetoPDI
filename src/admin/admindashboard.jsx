@@ -1,10 +1,14 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ShoppingCart, Users, Package, Tag,
   TrendingUp, Clock, CheckCircle, XCircle,
   ChevronRight, Award,
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
 import AdminLayout from "./adminlayout";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
@@ -12,11 +16,11 @@ const sans  = { fontFamily: "'Jost', sans-serif" };
 const BASE  = `${import.meta.env.VITE_API_URL}/api`;
 
 const statusStyles = {
-  pendente:   { bg: "bg-[#FEF9E7]", text: "text-[#A67C00]",  label: "Pendente"   },
-  confirmado: { bg: "bg-[#E6F1FB]", text: "text-[#185FA5]",  label: "Confirmado" },
-  enviado:    { bg: "bg-[#E8F0E6]", text: "text-[#3D6B4A]",  label: "Enviado"    },
-  entregue:   { bg: "bg-[#E8F0E6]", text: "text-[#2C5038]",  label: "Entregue"   },
-  cancelado:  { bg: "bg-[#FDECEA]", text: "text-[#C0392B]",  label: "Cancelado"  },
+  pendente:   { bg: "bg-[#FEF9E7]", text: "text-[#A67C00]",  label: "Pendente",   cor: "#A67C00" },
+  confirmado: { bg: "bg-[#E6F1FB]", text: "text-[#185FA5]",  label: "Confirmado", cor: "#185FA5" },
+  enviado:    { bg: "bg-[#E8F0E6]", text: "text-[#3D6B4A]",  label: "Enviado",    cor: "#3D6B4A" },
+  entregue:   { bg: "bg-[#E8F0E6]", text: "text-[#2C5038]",  label: "Entregue",   cor: "#2C5038" },
+  cancelado:  { bg: "bg-[#FDECEA]", text: "text-[#C0392B]",  label: "Cancelado",  cor: "#C0392B" },
 };
 
 function SkeletonCard() {
@@ -28,6 +32,32 @@ function SkeletonCard() {
       </div>
       <div className="w-20 h-7 rounded bg-[#E8F0E6] mb-1" />
       <div className="w-28 h-3 rounded bg-[#E8F0E6]" />
+    </div>
+  );
+}
+
+// ── Tooltip personalizado para o gráfico de barras ────────────────────────────
+function TooltipBarras({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-[#E8F0E6] rounded-xl shadow-lg px-4 py-3 text-xs" style={sans}>
+      <p className="font-semibold text-[#1A2E1A] mb-2">{label}</p>
+      {payload.map(p => (
+        <p key={p.name} style={{ color: p.color }} className="mb-0.5">
+          {p.name === "encomendas" ? "Encomendas" : "Receita"}: {p.name === "receita" ? `${p.value.toFixed(2)}€` : p.value}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ── Tooltip personalizado para o donut ───────────────────────────────────────
+function TooltipDonut({ active, payload }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white border border-[#E8F0E6] rounded-xl shadow-lg px-4 py-3 text-xs" style={sans}>
+      <p className="font-semibold text-[#1A2E1A]">{payload[0].name}</p>
+      <p style={{ color: payload[0].payload.cor }}>{payload[0].value} encomenda{payload[0].value !== 1 ? "s" : ""}</p>
     </div>
   );
 }
@@ -55,55 +85,53 @@ export default function AdminDashboard() {
     });
   }, []);
 
-  const receita      = encomendas.filter(e => e.estado !== "cancelado").reduce((s, e) => s + parseFloat(e.total_pago || 0), 0);
-  const pendentes    = encomendas.filter(e => e.estado === "pendente").length;
-  const recentes     = [...encomendas].sort((a, b) => new Date(b.data_pedido) - new Date(a.data_pedido)).slice(0, 6);
+  const receita   = encomendas.filter(e => e.estado !== "cancelado").reduce((s, e) => s + parseFloat(e.total_pago || 0), 0);
+  const pendentes = encomendas.filter(e => e.estado === "pendente").length;
+  const recentes  = [...encomendas].sort((a, b) => new Date(b.data_pedido) - new Date(a.data_pedido)).slice(0, 6);
+
+  // ── Dados para o gráfico de barras (últimos 6 meses) ─────────────────────────
+  const dadosBarras = (() => {
+    const meses = [];
+    const hoje = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = d.toLocaleDateString("pt-PT", { month: "short" });
+      const enc = encomendas.filter(e => {
+        const m = new Date(e.data_pedido);
+        return m.getFullYear() === d.getFullYear() && m.getMonth() === d.getMonth();
+      });
+      meses.push({
+        mes: label.charAt(0).toUpperCase() + label.slice(1).replace(".", ""),
+        encomendas: enc.length,
+        receita: parseFloat(enc.filter(e => e.estado !== "cancelado").reduce((s, e) => s + parseFloat(e.total_pago || 0), 0).toFixed(2)),
+      });
+    }
+    return meses;
+  })();
+
+  // ── Dados para o gráfico donut (por estado) ───────────────────────────────────
+  const dadosDonut = Object.entries(statusStyles)
+    .map(([key, s]) => ({
+      name: s.label,
+      value: encomendas.filter(e => e.estado === key).length,
+      cor: s.cor,
+    }))
+    .filter(d => d.value > 0);
 
   const stats = [
-    {
-      label:   "Encomendas",
-      valor:   encomendas.length,
-      sub:     `${pendentes} pendente${pendentes !== 1 ? "s" : ""}`,
-      icon:    ShoppingCart,
-      cor:     "#3D6B4A",
-      bg:      "#F0F5EE",
-      path:    "/admin/encomendas",
-    },
-    {
-      label:   "Receita Total",
-      valor:   `${receita.toFixed(2)}€`,
-      sub:     "encomendas confirmadas",
-      icon:    TrendingUp,
-      cor:     "#185FA5",
-      bg:      "#E6F1FB",
-      path:    "/admin/encomendas",
-    },
-    {
-      label:   "Utilizadores",
-      valor:   utilizadores.length,
-      sub:     `${utilizadores.filter(u => u.perfil === "admin").length} admin`,
-      icon:    Users,
-      cor:     "#7B4FA6",
-      bg:      "#F3EEF9",
-      path:    "/admin/utilizadores",
-    },
-    {
-      label:   "Produtos",
-      valor:   produtos.length,
-      sub:     "no catálogo",
-      icon:    Package,
-      cor:     "#A67C00",
-      bg:      "#FEF9E7",
-      path:    "/admin/produtos",
-    },
+    { label: "Encomendas",   valor: encomendas.length,    sub: `${pendentes} pendente${pendentes !== 1 ? "s" : ""}`, icon: ShoppingCart, cor: "#3D6B4A", bg: "#F0F5EE", path: "/admin/encomendas" },
+    { label: "Receita Total", valor: `${receita.toFixed(2)}€`, sub: "encomendas confirmadas", icon: TrendingUp, cor: "#185FA5", bg: "#E6F1FB", path: "/admin/encomendas" },
+    { label: "Utilizadores", valor: utilizadores.length,  sub: `${utilizadores.filter(u => u.perfil === "admin").length} admin`, icon: Users, cor: "#7B4FA6", bg: "#F3EEF9", path: "/admin/utilizadores" },
+    { label: "Produtos",     valor: produtos.length,      sub: "no catálogo", icon: Package, cor: "#A67C00", bg: "#FEF9E7", path: "/admin/produtos" },
   ];
 
   const atalhos = [
-    { label: "Categorias",   path: "/admin/categorias",   icon: Tag         },
-    { label: "Marcas",       path: "/admin/marcas",       icon: Award       },
-    { label: "Produtos",     path: "/admin/produtos",     icon: Package     },
-    { label: "Encomendas",   path: "/admin/encomendas",   icon: ShoppingCart},
-    { label: "Utilizadores", path: "/admin/utilizadores", icon: Users       },
+    { label: "Categorias",   path: "/admin/categorias",   icon: Tag          },
+    { label: "Marcas",       path: "/admin/marcas",       icon: Award        },
+    { label: "Produtos",     path: "/admin/produtos",     icon: Package      },
+    { label: "Encomendas",   path: "/admin/encomendas",   icon: ShoppingCart },
+    { label: "Utilizadores", path: "/admin/utilizadores", icon: Users        },
   ];
 
   const formatData = (d) => new Date(d).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" });
@@ -144,6 +172,81 @@ export default function AdminDashboard() {
           }
         </div>
 
+        {/* ── Gráficos ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+
+          {/* Gráfico de barras — últimos 6 meses */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E8F0E6] p-6">
+            <h2 style={serif} className="text-xl font-semibold text-[#1A2E1A] mb-1">Atividade dos Últimos 6 Meses</h2>
+            <p className="text-xs text-[#8FAF8A] mb-5">Encomendas e receita por mês</p>
+            {loading ? (
+              <div className="h-48 animate-pulse bg-[#F0F5EE] rounded-xl" />
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={dadosBarras} barGap={4} barCategoryGap="30%">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E8F0E6" vertical={false} />
+                  <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "#8FAF8A" }} axisLine={false} tickLine={false} />
+                  <YAxis yAxisId="enc" orientation="left"  tick={{ fontSize: 10, fill: "#8FAF8A" }} axisLine={false} tickLine={false} width={24} />
+                  <YAxis yAxisId="rec" orientation="right" tick={{ fontSize: 10, fill: "#8FAF8A" }} axisLine={false} tickLine={false} width={40} tickFormatter={v => `${v}€`} />
+                  <Tooltip content={<TooltipBarras />} cursor={{ fill: "#F7F9F5" }} />
+                  <Bar yAxisId="enc" dataKey="encomendas" name="encomendas" fill="#3D6B4A" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                  <Bar yAxisId="rec" dataKey="receita"    name="receita"    fill="#C8DFC4" radius={[6, 6, 0, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            {/* Legenda */}
+            <div className="flex items-center gap-5 mt-3">
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#3D6B4A] inline-block" /><span className="text-xs text-[#8FAF8A]">Encomendas</span></div>
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-[#C8DFC4] inline-block" /><span className="text-xs text-[#8FAF8A]">Receita</span></div>
+            </div>
+          </div>
+
+          {/* Gráfico donut — por estado */}
+          <div className="bg-white rounded-2xl border border-[#E8F0E6] p-6">
+            <h2 style={serif} className="text-xl font-semibold text-[#1A2E1A] mb-1">Estado das Encomendas</h2>
+            <p className="text-xs text-[#8FAF8A] mb-4">Distribuição por estado</p>
+            {loading ? (
+              <div className="h-48 animate-pulse bg-[#F0F5EE] rounded-xl" />
+            ) : dadosDonut.length === 0 ? (
+              <div className="h-48 flex items-center justify-center">
+                <p style={serif} className="text-[#C8DFC4] text-lg">Sem dados</p>
+              </div>
+            ) : (
+              <>
+                <ResponsiveContainer width="100%" height={160}>
+                  <PieChart>
+                    <Pie
+                      data={dadosDonut}
+                      cx="50%" cy="50%"
+                      innerRadius={45} outerRadius={72}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {dadosDonut.map((entry, i) => (
+                        <Cell key={i} fill={entry.cor} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<TooltipDonut />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Legenda manual */}
+                <div className="space-y-1.5 mt-2">
+                  {dadosDonut.map(d => (
+                    <div key={d.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: d.cor }} />
+                        <span className="text-xs text-[#5C6E5C]">{d.name}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-[#1A2E1A]">{d.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ── Tabela + Atalhos ── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Encomendas Recentes */}
@@ -216,28 +319,6 @@ export default function AdminDashboard() {
                 </Link>
               ))}
             </nav>
-
-            {/* Resumo por estado */}
-            {!loading && (
-              <div className="mx-4 mb-4 p-4 bg-[#F7F9F5] rounded-xl space-y-2.5">
-                <p className="text-[10px] uppercase tracking-widest text-[#8FAF8A] font-semibold mb-3">Estado das Encomendas</p>
-                {[
-                  { key: "pendente",   icon: Clock,         cor: "#A67C00" },
-                  { key: "confirmado", icon: CheckCircle,   cor: "#185FA5" },
-                  { key: "enviado",    icon: TrendingUp,    cor: "#3D6B4A" },
-                  { key: "cancelado",  icon: XCircle,       cor: "#C0392B" },
-                ].map(({ key, icon: Icon, cor }) => {
-                  const count = encomendas.filter(e => e.estado === key).length;
-                  return (
-                    <div key={key} className="flex items-center gap-2">
-                      <Icon size={12} style={{ color: cor }} />
-                      <span className="text-xs text-[#5C6E5C] flex-1 capitalize">{statusStyles[key]?.label}</span>
-                      <span className="text-xs font-semibold text-[#2C3A2C]">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
         </div>
