@@ -1,6 +1,7 @@
-const express = require('express');
-const router  = express.Router();
-const db      = require('../db');
+const express   = require('express');
+const router    = express.Router();
+const db        = require('../db');
+const adminAuth = require('../middleware/admin');
 
 // ── GET todos os produtos ─────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
@@ -127,7 +128,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // ── POST criar produto ────────────────────────────────────────────────────────
-router.post('/', async (req, res) => {
+router.post('/', adminAuth, async (req, res) => {
   const { id_categoria, id_marca, nome_produto, preco, preco_anterior,
           descricao, materiais, guia_cuidados, stock, imagens, variantes } = req.body;
   try {
@@ -166,7 +167,7 @@ router.post('/', async (req, res) => {
 });
 
 // ── PUT editar produto ────────────────────────────────────────────────────────
-router.put('/:id', async (req, res) => {
+router.put('/:id', adminAuth, async (req, res) => {
   const id_produto = req.params.id;
   const { id_categoria, id_marca, nome_produto, preco, preco_anterior,
           descricao, materiais, guia_cuidados, stock, imagens, variantes } = req.body;
@@ -254,7 +255,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // ── DELETE eliminar produto ───────────────────────────────────────────────────
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     await db.query('DELETE FROM produtos WHERE id_produto = ?', [req.params.id]);
     res.json({ mensagem: 'Produto eliminado com sucesso!' });

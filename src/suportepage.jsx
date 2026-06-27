@@ -1,4 +1,5 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
+import { io as socketIO } from "socket.io-client";
 import { Link, useNavigate } from "react-router-dom";
 import {
   MessageSquare, Phone, Mail, Clock, Send, Search,
@@ -55,12 +56,32 @@ function Toast({ toast, onClose }) {
 }
 
 // ── Thread (conversa) ──────────────────────────────────────────────────────────
-function ThreadView({ ticket, respostas, perfil, onVoltar, onResposta, token }) {
+function ThreadView({ ticket, respostas: respostasIniciais, perfil, onVoltar, onResposta, token, socket }) {
   const [texto, setTexto]       = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [respostas, setRespostas] = useState(respostasIniciais);
   const bottomRef               = useRef(null);
 
+  useEffect(() => { setRespostas(respostasIniciais); }, [respostasIniciais]);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [respostas]);
+
+  // Entrar/sair da sala do ticket para receber mensagens em tempo real
+  useEffect(() => {
+    if (!socket || !ticket?.id_mensagem) return;
+    socket.emit('entrar_ticket', ticket.id_mensagem);
+    const handler = (novaResposta) => {
+      setRespostas(prev => {
+        // Evita duplicados
+        if (prev.some(r => r.id_resposta === novaResposta.id_resposta)) return prev;
+        return [...prev, novaResposta];
+      });
+    };
+    socket.on('nova_resposta', handler);
+    return () => {
+      socket.off('nova_resposta', handler);
+      socket.emit('sair_ticket', ticket.id_mensagem);
+    };
+  }, [socket, ticket?.id_mensagem]);
 
   const badge = ESTADO_BADGE[ticket.estado] || {};
 
@@ -73,7 +94,17 @@ function ThreadView({ ticket, respostas, perfil, onVoltar, onResposta, token }) 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ mensagem: texto.trim() }),
       });
-      if (res.ok) { setTexto(""); onResposta(); }
+      if (res.ok) {
+        const dados = await res.json();
+        setTexto("");
+        // Adiciona imediatamente a mensagem enviada sem esperar pelo socket
+        if (dados.resposta) {
+          setRespostas(prev => {
+            if (prev.some(r => r.id_resposta === dados.resposta.id_resposta)) return prev;
+            return [...prev, dados.resposta];
+          });
+        }
+      }
     } finally { setEnviando(false); }
   };
 
@@ -182,6 +213,7 @@ export default function SuportePage() {
   const [respostas, setRespostas]   = useState([]);
   const [loading, setLoading]       = useState(true);
   const [toast, setToast]           = useState(null);
+  const [socket, setSocket]         = useState(null);
 
   // form
   const [categoria, setCategoria]   = useState("");
@@ -199,7 +231,31 @@ export default function SuportePage() {
     if (!token) { navigate('/login'); return; }
     carregarPerfil();
     carregarMensagens();
+    // Avisa a Navbar para limpar o badge
+    window.dispatchEvent(new Event('suporte-lido'));
+
+    // Ligar ao Socket.io
+    const s = socketIO(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    setSocket(s);
+
+    return () => s.disconnect();
   }, []);
+
+  // Quando o perfil carrega, entra na sala de suporte para receber notificações
+  useEffect(() => {
+    if (!socket || !perfil?.id_utilizador) return;
+    socket.emit('entrar_suporte', perfil.id_utilizador);
+
+    // Quando o admin responde: atualiza badge e mostra toast
+    const handler = ({ id_mensagem }) => {
+      setMensagens(prev => prev.map(m =>
+        m.id_mensagem === id_mensagem ? { ...m, lida_cliente: false, estado: 'respondida' } : m
+      ));
+      mostrarToast('Tens uma nova resposta do suporte!', 'sucesso');
+    };
+    socket.on('admin_respondeu', handler);
+    return () => socket.off('admin_respondeu', handler);
+  }, [socket, perfil]);
 
   const carregarPerfil = async () => {
     try {
@@ -320,6 +376,7 @@ export default function SuportePage() {
               respostas={respostas}
               perfil={perfil}
               token={token}
+              socket={socket}
               onVoltar={() => { setTicketAtivo(null); carregarMensagens(); }}
               onResposta={() => abrirTicket(ticketAtivo.id_mensagem)}
             />

@@ -1,11 +1,13 @@
-const express = require('express');
-const router  = express.Router();
-const db      = require('../db');
-const jwt     = require('jsonwebtoken');
+const express   = require('express');
+const router    = express.Router();
+const db        = require('../db');
+const jwt       = require('jsonwebtoken');
+const adminAuth = require('../middleware/admin');
+const auth      = require('../middleware/auth');
 const { enviarConfirmacaoEncomenda, enviarAtualizacaoEstado } = require('../services/notificacoes');
 
 // ── GET todas as encomendas (admin) ───────────────────────────────────────────
-router.get('/', async (req, res) => {
+router.get('/', adminAuth, async (req, res) => {
   try {
     const [encomendas] = await db.query(`
       SELECT e.*, u.nome, u.email,
@@ -23,7 +25,7 @@ router.get('/', async (req, res) => {
 });
 
 // ── GET encomenda por id com linhas ───────────────────────────────────────────
-router.get('/:id', async (req, res) => {
+router.get('/:id', adminAuth, async (req, res) => {
   try {
     const [encomenda] = await db.query(`
       SELECT e.*, u.nome, u.email,
@@ -54,7 +56,7 @@ router.get('/:id', async (req, res) => {
 
 // ── PUT atualizar estado (admin) ──────────────────────────────────────────────
 // Cancelamento → restaura stock automaticamente
-router.put('/:id/estado', async (req, res) => {
+router.put('/:id/estado', adminAuth, async (req, res) => {
   const { estado } = req.body;
   const conn = await db.getConnection();
 
@@ -226,8 +228,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ── DELETE /limpar — apaga todas as encomendas e restaura stock (uso de testes) ──
-router.delete('/limpar', async (req, res) => {
+// ── DELETE /limpar — apaga todas as encomendas e restaura stock (apenas admin) ──
+router.delete('/limpar', adminAuth, async (req, res) => {
   const conn = await db.getConnection();
   try {
     await conn.beginTransaction();

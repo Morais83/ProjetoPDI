@@ -1,6 +1,7 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
+const express   = require('express');
+const router    = express.Router();
+const db        = require('../db');
+const adminAuth = require('../middleware/admin');
 
 router.get('/', async (req, res) => {
   try {
@@ -11,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', adminAuth, async (req, res) => {
   const { nome_marca, descricao, imagem_url } = req.body;
   try {
     const [resultado] = await db.query(
@@ -24,7 +25,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', adminAuth, async (req, res) => {
   const { nome_marca, descricao, imagem_url } = req.body;
   try {
     await db.query(
@@ -37,7 +38,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     await db.query('DELETE FROM marcas WHERE id_marca=?', [req.params.id]);
     res.json({ mensagem: 'Marca eliminada!' });

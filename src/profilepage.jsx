@@ -345,6 +345,7 @@ export default function ProfilePage() {
             {secoes.map(s => {
               const Icon = s.icon;
               const ativo = secaoAtiva === s.id && s.id !== "servico";
+              const naoLidasSuporte = s.id === "servico" ? parseInt(localStorage.getItem('suporte_nao_lidas') || '0') : 0;
               return (
                 <button key={s.id}
                   onClick={() => s.id === "servico" ? navigate("/suporte") : setSecaoAtiva(s.id)}
@@ -353,6 +354,11 @@ export default function ProfilePage() {
                   }`}>
                   <Icon size={15} className={ativo ? "text-[#3D6B4A]" : "text-[#A8C4A8]"} />
                   <span className="flex-1">{s.label}</span>
+                  {naoLidasSuporte > 0 && (
+                    <span className="bg-[#C0392B] text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">
+                      {naoLidasSuporte}
+                    </span>
+                  )}
                 </button>
               );
             })}

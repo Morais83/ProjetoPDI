@@ -31,9 +31,10 @@ export default function ProductPage() {
 
   const utilizador = JSON.parse(localStorage.getItem('utilizador'));
 
-  if (!id) return null;
-
-  useEffect(() => { carregarProduto(); }, [id]);
+  useEffect(() => {
+    if (!id) return;
+    carregarProduto();
+  }, [id]);
 
   useEffect(() => {
     if (!produto || !utilizador) return;

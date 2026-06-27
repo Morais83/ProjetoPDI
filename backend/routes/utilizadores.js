@@ -1,8 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const express   = require('express');
+const router    = express.Router();
+const db        = require('../db');
+const bcrypt    = require('bcryptjs');
+const jwt       = require('jsonwebtoken');
+const adminAuth = require('../middleware/admin');
 require('dotenv').config();
 
 const getUser = (req) => {
@@ -16,7 +17,7 @@ const getUser = (req) => {
 };
 
 // GET todos os utilizadores (admin)
-router.get('/', async (req, res) => {
+router.get('/', adminAuth, async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT u.id_utilizador, u.nome, u.email, u.perfil, u.data_criada,
@@ -118,8 +119,8 @@ router.get('/me/encomendas', async (req, res) => {
 
     res.json(encomendas);
   } catch (err) {
-    console.error("ERRO COMPLETO DO BACKEND:", err); 
-    res.status(500).json({ erro: 'Erro ao obter encomendas', detalhe: err.sqlMessage });
+    console.error("ERRO COMPLETO DO BACKEND:", err);
+    res.status(500).json({ erro: 'Erro ao obter encomendas' });
   }
 });
 
@@ -186,7 +187,7 @@ router.delete('/me/moradas/:id', async (req, res) => {
 });
 
 // PUT editar utilizador (admin)
-router.put('/:id', async (req, res) => {
+router.put('/:id', adminAuth, async (req, res) => {
   const { nome, email, perfil } = req.body;
   try {
     await db.query(
@@ -200,7 +201,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE eliminar utilizador (admin)
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     await db.query('DELETE FROM utilizadores WHERE id_utilizador=?', [req.params.id]);
     res.json({ mensagem: 'Utilizador eliminado!' });

@@ -1,6 +1,7 @@
-﻿import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef, useCallback } from "react";
 import AdminLayout from "./adminlayout";
 import { MessageCircle, Search, CheckCircle, Clock, XCircle, Send, ChevronLeft, User, Shield, RefreshCw, Filter } from "lucide-react";
+import { io as socketIO } from "socket.io-client";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans = { fontFamily: "'Jost', sans-serif" };
@@ -37,6 +38,7 @@ export default function AdminSuporte() {
   const [novoEstado, setNovoEstado] = useState("");
   const [toast, setToast] = useState(null);
   const bottomRef = useRef(null);
+  const socketRef = useRef(null);
   const token = localStorage.getItem("token");
 
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
@@ -58,7 +60,50 @@ export default function AdminSuporte() {
     setLoading(false);
   };
 
-  useEffect(() => { carregar(); }, []);
+  useEffect(() => {
+    carregar();
+
+    // Socket.io — receber eventos em tempo real
+    const socket = socketIO(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    socketRef.current = socket;
+    socket.emit('entrar_admin');
+
+    // Nova mensagem de suporte de um cliente
+    socket.on('nova_mensagem_suporte', ({ id_mensagem, assunto, nome }) => {
+      showToast(`Nova mensagem de ${nome}: ${assunto}`);
+      setTickets(prev => [{
+        id_mensagem, assunto, nome, email: '', estado: 'aberta',
+        lida_admin: false, total_respostas: 0, criado_em: new Date(),
+      }, ...prev]);
+    });
+
+    // Cliente respondeu a um ticket
+    socket.on('cliente_respondeu', ({ id_mensagem }) => {
+      setTickets(prev => prev.map(t =>
+        t.id_mensagem === id_mensagem ? { ...t, lida_admin: false, estado: 'aberta' } : t
+      ));
+      // Se o ticket está aberto, recarrega a thread
+      setTicketAberto(prev => {
+        if (prev?.id_mensagem === id_mensagem) {
+          fetch(`${BASE}/suporte/admin/${id_mensagem}`, { headers })
+            .then(r => r.json()).then(dados => setTicketAberto(dados));
+        }
+        return prev;
+      });
+    });
+
+    // Quando o admin responde via socket (thread em tempo real no painel admin)
+    socket.on('nova_resposta', (novaResposta) => {
+      setTicketAberto(prev => {
+        if (!prev || prev.id_mensagem !== novaResposta.id_mensagem) return prev;
+        const jaExiste = (prev.respostas || []).some(r => r.id_resposta === novaResposta.id_resposta);
+        if (jaExiste) return prev;
+        return { ...prev, respostas: [...(prev.respostas || []), novaResposta] };
+      });
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -71,8 +116,9 @@ export default function AdminSuporte() {
       setTicketAberto(dados);
       setNovoEstado(dados.estado);
       setRespostaTexto("");
-      // marca como lida localmente
       setTickets(prev => prev.map(t => t.id_mensagem === id ? { ...t, lida_admin: true } : t));
+      // Entrar na sala do ticket para receber respostas do cliente em tempo real
+      if (socketRef.current) socketRef.current.emit('entrar_ticket', id);
     } catch {
       showToast("Erro ao abrir ticket", "erro");
     }
@@ -88,14 +134,24 @@ export default function AdminSuporte() {
         body: JSON.stringify({ mensagem: respostaTexto.trim() }),
       });
       if (!res.ok) throw new Error();
+      const dados = await res.json();
       showToast("Resposta enviada!");
       setRespostaTexto("");
-      // Recarrega thread
-      const updated = await fetch(`${BASE}/suporte/admin/${ticketAberto.id_mensagem}`, { headers });
-      const dados = await updated.json();
-      setTicketAberto(dados);
-      setNovoEstado(dados.estado);
-      setTickets(prev => prev.map(t => t.id_mensagem === dados.id_mensagem ? { ...t, estado: dados.estado } : t));
+      // Adiciona imediatamente a mensagem enviada sem esperar pelo socket
+      if (dados.resposta) {
+        setTicketAberto(prev => {
+          if (!prev) return prev;
+          const jaExiste = (prev.respostas || []).some(r => r.id_resposta === dados.resposta.id_resposta);
+          if (jaExiste) return prev;
+          return { ...prev, estado: 'respondida', respostas: [...(prev.respostas || []), dados.resposta] };
+        });
+      } else {
+        setTicketAberto(prev => prev ? { ...prev, estado: 'respondida' } : prev);
+      }
+      setTickets(prev => prev.map(t =>
+        t.id_mensagem === ticketAberto.id_mensagem ? { ...t, estado: 'respondida' } : t
+      ));
+      setNovoEstado('respondida');
     } catch {
       showToast("Erro ao enviar resposta", "erro");
     }
@@ -151,7 +207,11 @@ export default function AdminSuporte() {
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <button
-              onClick={() => { setTicketAberto(null); carregar(); }}
+              onClick={() => {
+            if (socketRef.current) socketRef.current.emit('sair_ticket', ticketAberto.id_mensagem);
+            setTicketAberto(null);
+            carregar();
+          }}
               className="flex items-center gap-2 text-sm text-[#3D6B4A] hover:text-[#2C5038] transition-colors"
             >
               <ChevronLeft size={18} /> Voltar
