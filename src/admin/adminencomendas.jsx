@@ -44,11 +44,13 @@ export default function AdminEncomendas() {
   const [pesquisa, setPesquisa] = useState("");
   const [toast, setToast] = useState(null);
 
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
   const mostrarToast = (msg, tipo = "sucesso") => {
     setToast({ msg, tipo });
     setTimeout(() => setToast(null), 4000);
   };
-  
 
   useEffect(() => {
     carregarEncomendas();
@@ -57,9 +59,9 @@ export default function AdminEncomendas() {
   const carregarEncomendas = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas`, { headers });
       const dados = await res.json();
-      setEncomendas(dados);
+      setEncomendas(Array.isArray(dados) ? dados : []);
     } catch (err) {
       console.error(err);
     }
@@ -68,7 +70,7 @@ export default function AdminEncomendas() {
 
   const abrirDetalhes = async (enc) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/${enc.id_encomenda}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/${enc.id_encomenda}`, { headers });
       const dados = await res.json();
       setEncomendaAberta(dados);
     } catch (err) {
@@ -80,7 +82,7 @@ export default function AdminEncomendas() {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/${id}/estado`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ estado: novoEstado }),
       });
       setEncomendaAberta(prev => ({ ...prev, estado: novoEstado }));
@@ -94,7 +96,7 @@ export default function AdminEncomendas() {
   const limparTodasEncomendas = async () => {
     if (!confirm("Apagar TODAS as encomendas e restaurar stock? Esta ação é irreversível.")) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/limpar`, { method: 'DELETE' });
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/encomendas/limpar`, { method: 'DELETE', headers });
       const dados = await res.json();
       mostrarToast(dados.mensagem || "Encomendas apagadas e stock restaurado.");
       carregarEncomendas();

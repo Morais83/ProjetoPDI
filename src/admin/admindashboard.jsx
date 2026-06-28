@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ShoppingCart, Users, Package, Tag,
   TrendingUp, Clock, CheckCircle, XCircle,
-  ChevronRight, Award,
+  ChevronRight,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -72,10 +72,13 @@ export default function AdminDashboard() {
   const hora       = new Date().getHours();
   const saudacao   = hora < 12 ? "Bom dia" : hora < 19 ? "Boa tarde" : "Boa noite";
 
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}` };
+
   useEffect(() => {
     Promise.all([
-      fetch(`${BASE}/encomendas`).then(r => r.json()).catch(() => []),
-      fetch(`${BASE}/utilizadores`).then(r => r.json()).catch(() => []),
+      fetch(`${BASE}/encomendas`, { headers }).then(r => r.json()).catch(() => []),
+      fetch(`${BASE}/utilizadores`, { headers }).then(r => r.json()).catch(() => []),
       fetch(`${BASE}/produtos`).then(r => r.json()).catch(() => []),
     ]).then(([enc, util, prod]) => {
       setEncomendas(Array.isArray(enc)  ? enc  : []);
@@ -124,14 +127,6 @@ export default function AdminDashboard() {
     { label: "Receita Total", valor: `${receita.toFixed(2)}€`, sub: "encomendas confirmadas", icon: TrendingUp, cor: "#185FA5", bg: "#E6F1FB", path: "/admin/encomendas" },
     { label: "Utilizadores", valor: utilizadores.length,  sub: `${utilizadores.filter(u => u.perfil === "admin").length} admin`, icon: Users, cor: "#7B4FA6", bg: "#F3EEF9", path: "/admin/utilizadores" },
     { label: "Produtos",     valor: produtos.length,      sub: "no catálogo", icon: Package, cor: "#A67C00", bg: "#FEF9E7", path: "/admin/produtos" },
-  ];
-
-  const atalhos = [
-    { label: "Categorias",   path: "/admin/categorias",   icon: Tag          },
-    { label: "Marcas",       path: "/admin/marcas",       icon: Award        },
-    { label: "Produtos",     path: "/admin/produtos",     icon: Package      },
-    { label: "Encomendas",   path: "/admin/encomendas",   icon: ShoppingCart },
-    { label: "Utilizadores", path: "/admin/utilizadores", icon: Users        },
   ];
 
   const formatData = (d) => new Date(d).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" });
@@ -246,11 +241,9 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* ── Tabela + Atalhos ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          {/* Encomendas Recentes */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden">
+        {/* ── Encomendas Recentes ── */}
+        <div>
+          <div className="bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden">
             <div className="px-6 py-4 border-b border-[#E8F0E6] flex items-center justify-between">
               <h2 style={serif} className="text-xl font-semibold text-[#1A2E1A]">Encomendas Recentes</h2>
               <Link to="/admin/encomendas"
@@ -300,25 +293,6 @@ export default function AdminDashboard() {
                 })}
               </div>
             )}
-          </div>
-
-          {/* Atalhos Rápidos */}
-          <div className="bg-white rounded-2xl border border-[#E8F0E6] overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#E8F0E6]">
-              <h2 style={serif} className="text-xl font-semibold text-[#1A2E1A]">Acesso Rápido</h2>
-            </div>
-            <nav className="p-3 space-y-1">
-              {atalhos.map(({ label, path, icon: Icon }) => (
-                <Link key={path} to={path}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-[#4A5C4A] hover:bg-[#F0F5EE] hover:text-[#3D6B4A] transition-all group">
-                  <div className="w-8 h-8 rounded-lg bg-[#F7F9F5] group-hover:bg-[#E8F0E6] flex items-center justify-center flex-shrink-0 transition-colors">
-                    <Icon size={15} className="text-[#6B9E63]" />
-                  </div>
-                  <span className="flex-1">{label}</span>
-                  <ChevronRight size={13} className="text-[#C8DFC4] group-hover:text-[#3D6B4A] transition-colors" />
-                </Link>
-              ))}
-            </nav>
           </div>
 
         </div>

@@ -32,6 +32,9 @@ export default function AdminCategorias() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
 
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
   useEffect(() => {
     carregarCategorias();
   }, []);
@@ -74,7 +77,7 @@ export default function AdminCategorias() {
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta categoria?")) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/categorias/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/categorias/${id}`, { method: 'DELETE', headers });
       carregarCategorias();
       mostrarToast("Categoria eliminada com sucesso.");
     } catch (err) {
@@ -82,7 +85,7 @@ export default function AdminCategorias() {
     }
   };
 
-  // ── Função de Upload para o Cloudinary ──
+  // ── Função de Upload ──
   const handleUploadImagem = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -114,14 +117,14 @@ export default function AdminCategorias() {
       if (categoriaEditando) {
         await fetch(`${import.meta.env.VITE_API_URL}/api/categorias/${categoriaEditando}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(form),
         });
         mostrarToast("Categoria atualizada com sucesso.");
       } else {
         await fetch(`${import.meta.env.VITE_API_URL}/api/categorias`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ ...form, id_categoria_pai: abaAtiva }),
         });
         mostrarToast("Categoria criada com sucesso.");

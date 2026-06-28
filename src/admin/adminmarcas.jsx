@@ -12,6 +12,9 @@ export default function AdminMarcas() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
   useEffect(() => {
     carregarMarcas();
   }, []);
@@ -48,7 +51,7 @@ export default function AdminMarcas() {
   const eliminar = async (id) => {
     if (!window.confirm("Tens a certeza que queres eliminar esta marca?")) return;
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/marcas/${id}`, { method: 'DELETE' });
+      await fetch(`${import.meta.env.VITE_API_URL}/api/marcas/${id}`, { method: 'DELETE', headers });
       carregarMarcas();
     } catch (err) {
       console.error(err);
@@ -81,13 +84,13 @@ export default function AdminMarcas() {
       if (marcaEditando) {
         await fetch(`${import.meta.env.VITE_API_URL}/api/marcas/${marcaEditando}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(form),
         });
       } else {
         await fetch(`${import.meta.env.VITE_API_URL}/api/marcas`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(form),
         });
       }
