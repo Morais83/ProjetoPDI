@@ -123,7 +123,7 @@ const topicos = [
       },
       {
         title: "Têm loja física?",
-        content: "De momento operamos apenas online. No entanto, estamos a trabalhar para abrir uma loja física em breve. Subscreve a nossa newsletter para seres a primeira a saber!"
+        content: "Sim! Podes visitar-nos presencialmente na Av. Igreja 20, 4525-482 Vila Maior. Estamos disponíveis de Segunda a Sexta, das 10h às 19h. Também podes escolher o levantamento em loja no checkout, sem custos de envio."
       },
     ]
   },

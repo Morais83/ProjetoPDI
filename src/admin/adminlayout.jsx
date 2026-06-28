@@ -5,6 +5,7 @@ import {
   Headphones, Globe, LogOut, Menu, X,
   ChevronRight, LayoutDashboard,
 } from "lucide-react";
+import { io as socketIO } from "socket.io-client";
 
 const sans  = { fontFamily: "'Jost', sans-serif" };
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
@@ -22,9 +23,37 @@ const links = [
 export default function AdminLayout({ children }) {
   const location               = useLocation();
   const [drawerAberto, setDrawerAberto] = useState(false);
+  const [naoLidasSuporte, setNaoLidasSuporte] = useState(0);
 
   // Fecha drawer ao mudar de página
   useEffect(() => { setDrawerAberto(false); }, [location.pathname]);
+
+  // Carregar contagem inicial de mensagens não lidas + socket
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    // Busca inicial
+    fetch(`${import.meta.env.VITE_API_URL}/api/suporte/admin/todas`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(dados => {
+        if (Array.isArray(dados)) {
+          setNaoLidasSuporte(dados.filter(t => !t.lida_admin).length);
+        }
+      })
+      .catch(() => {});
+
+    // Socket.io — atualiza badge em tempo real
+    const socket = socketIO(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    socket.emit('entrar_admin');
+
+    socket.on('nova_mensagem_suporte', () => setNaoLidasSuporte(n => n + 1));
+    socket.on('cliente_respondeu', () => setNaoLidasSuporte(n => n + 1));
+
+    return () => socket.disconnect();
+  }, []);
 
   // Bloqueia scroll quando drawer mobile está aberto
   useEffect(() => {
@@ -73,6 +102,11 @@ export default function AdminLayout({ children }) {
           const ativo = path === "/admin"
             ? location.pathname === "/admin"
             : location.pathname === path;
+          const isSuporte = path === "/admin/suporte";
+          // Limpa badge quando entra na página de suporte
+          if (ativo && isSuporte && naoLidasSuporte > 0) {
+            setTimeout(() => setNaoLidasSuporte(0), 500);
+          }
           return (
             <Link key={path} to={path}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all group ${
@@ -82,6 +116,11 @@ export default function AdminLayout({ children }) {
               }`}>
               <Icon size={16} className={ativo ? "text-[#3D6B4A]" : "text-[#6B9E63] group-hover:text-white transition-colors"} />
               <span className="flex-1">{label}</span>
+              {isSuporte && naoLidasSuporte > 0 && !ativo && (
+                <span className="bg-[#C0392B] text-white text-[9px] font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center">
+                  {naoLidasSuporte}
+                </span>
+              )}
               {ativo && <ChevronRight size={13} className="text-[#3D6B4A] opacity-60" />}
             </Link>
           );

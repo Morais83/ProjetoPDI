@@ -66,6 +66,16 @@ function CheckoutInner() {
 
   const token = localStorage.getItem('token');
 
+  // Redireciona para login se não houver sessão ou se a sessão expirar (401)
+  const verificarAuth = (res) => {
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      navigate('/login');
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     setCarrinho(getCarrinho());
     if (token) carregarMoradas();
@@ -77,6 +87,7 @@ function CheckoutInner() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/utilizadores/me/moradas`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!verificarAuth(res)) return;
       const dados = await res.json();
       setMoradas(Array.isArray(dados) ? dados : []);
       const predefinida = dados.find?.(m => m.predefinida);
@@ -112,6 +123,7 @@ function CheckoutInner() {
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ rua: novaRua, cidade: novaCidade, codigo_postal: novoCp, pais: 'Portugal', predefinida: false }),
         });
+        if (!verificarAuth(resMorada)) { setLoading(false); return; }
         const dadosMorada = await resMorada.json();
         idMorada = dadosMorada.id;
       }
@@ -122,6 +134,7 @@ function CheckoutInner() {
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ total: Math.round(total * 100) }),
         });
+        if (!verificarAuth(resPI)) { setLoading(false); return; }
         const { clientSecret, erro: erroPI } = await resPI.json();
 
         if (erroPI) { setErro(erroPI); setLoading(false); return; }

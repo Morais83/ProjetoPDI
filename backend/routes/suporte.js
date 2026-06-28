@@ -66,6 +66,16 @@ router.post('/nova', auth, async (req, res) => {
       'INSERT INTO mensagens_suporte (id_utilizador, assunto, mensagem) VALUES (?, ?, ?)',
       [req.utilizador.id, assunto.trim(), mensagem.trim()]
     );
+
+    // Notifica o admin em tempo real
+    const io = req.app.get('io');
+    const [[utilizador]] = await db.query('SELECT nome FROM utilizadores WHERE id_utilizador = ?', [req.utilizador.id]);
+    io.to('admin').emit('nova_mensagem_suporte', {
+      id_mensagem: result.insertId,
+      assunto: assunto.trim(),
+      nome: utilizador?.nome || 'Cliente',
+    });
+
     res.status(201).json({ mensagem: 'Mensagem enviada!', id_mensagem: result.insertId });
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao enviar mensagem' });
@@ -85,7 +95,7 @@ router.post('/:id/responder', auth, async (req, res) => {
     if (!ticket.length) return res.status(404).json({ erro: 'Não encontrado' });
     if (ticket[0].estado === 'fechada') return res.status(400).json({ erro: 'Ticket fechado' });
 
-    await db.query(
+    const [result] = await db.query(
       'INSERT INTO respostas_suporte (id_mensagem, mensagem, is_admin) VALUES (?, ?, FALSE)',
       [req.params.id, mensagem.trim()]
     );
@@ -94,7 +104,21 @@ router.post('/:id/responder', auth, async (req, res) => {
       [req.params.id]
     );
 
-    res.json({ mensagem: 'Resposta enviada!' });
+    const novaResposta = {
+      id_resposta: result.insertId,
+      id_mensagem: parseInt(req.params.id),
+      mensagem: mensagem.trim(),
+      is_admin: false,
+      criado_em: new Date(),
+    };
+
+    const io = req.app.get('io');
+    // Envia a mensagem para quem está no ticket (admin e cliente)
+    io.to(`ticket_${req.params.id}`).emit('nova_resposta', novaResposta);
+    // Notifica o admin na lista de tickets
+    io.to('admin').emit('cliente_respondeu', { id_mensagem: parseInt(req.params.id) });
+
+    res.json({ mensagem: 'Resposta enviada!', resposta: novaResposta });
   } catch (err) {
     res.status(500).json({ erro: 'Erro ao responder' });
   }
@@ -158,7 +182,7 @@ router.post('/admin/:id/responder', auth, apenasAdmin, async (req, res) => {
     );
     if (!ticket.length) return res.status(404).json({ erro: 'Não encontrado' });
 
-    await db.query(
+    const [result] = await db.query(
       'INSERT INTO respostas_suporte (id_mensagem, mensagem, is_admin) VALUES (?, ?, TRUE)',
       [req.params.id, mensagem.trim()]
     );
@@ -167,10 +191,27 @@ router.post('/admin/:id/responder', auth, apenasAdmin, async (req, res) => {
       [req.params.id]
     );
 
+    const novaResposta = {
+      id_resposta: result.insertId,
+      id_mensagem: parseInt(req.params.id),
+      mensagem: mensagem.trim(),
+      is_admin: true,
+      criado_em: new Date(),
+    };
+
+    const io = req.app.get('io');
+    // Envia resposta em tempo real para quem está no ticket
+    io.to(`ticket_${req.params.id}`).emit('nova_resposta', novaResposta);
+    // Notifica o cliente que tem nova resposta
+    io.to(`suporte_${ticket[0].id_utilizador}`).emit('admin_respondeu', {
+      id_mensagem: parseInt(req.params.id),
+      assunto: ticket[0].assunto,
+    });
+
     const { email, nome, id_mensagem, assunto } = ticket[0];
     if (email) enviarRespostaSuporte({ email, nome, id_mensagem, assunto, resposta: mensagem.trim() });
 
-    res.json({ mensagem: 'Resposta enviada!' });
+    res.json({ mensagem: 'Resposta enviada!', resposta: novaResposta });
   } catch (err) {
     console.error(err);
     res.status(500).json({ erro: 'Erro ao responder' });

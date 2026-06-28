@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Search, User, ShoppingBag, Menu, X, ChevronDown, ChevronRight } from "lucide-react";
+import { io as socketIO } from "socket.io-client";
 
 const serif = { fontFamily: "'Cormorant Garamond', Georgia, serif" };
 const sans  = { fontFamily: "'Jost', sans-serif" };
@@ -31,6 +32,7 @@ export default function Navbar() {
   const [numArtigos,     setNumArtigos]      = useState(0);
   const [pesquisaAberta, setPesquisaAberta]  = useState(false);
   const [termoPesquisa,  setTermoPesquisa]   = useState("");
+  const [naoLidas, setNaoLidas] = useState(() => parseInt(localStorage.getItem('suporte_nao_lidas') || '0'));
   const menuRef   = useRef(null);
   const navigate  = useNavigate();
   const utilizador = JSON.parse(localStorage.getItem('utilizador'));
@@ -69,6 +71,49 @@ export default function Navbar() {
     document.body.style.overflow = mobileAberto ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileAberto]);
+
+  // Notificações de suporte em tempo real (só para utilizadores logados, não admin)
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !utilizador || utilizador.perfil === 'admin') return;
+
+    // Busca inicial de mensagens não lidas
+    fetch(`${import.meta.env.VITE_API_URL}/api/suporte/minhas`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(dados => {
+        if (Array.isArray(dados)) {
+          const count = dados.filter(m => !m.lida_cliente && m.estado === 'respondida').length;
+          setNaoLidas(count);
+          localStorage.setItem('suporte_nao_lidas', count);
+        }
+      })
+      .catch(() => {});
+
+    // Socket — recebe notificação quando admin responde
+    const socket = socketIO(import.meta.env.VITE_API_URL || 'http://localhost:5000');
+    socket.emit('entrar_suporte', utilizador.id);
+    socket.on('admin_respondeu', () => {
+      setNaoLidas(n => {
+        const novo = n + 1;
+        localStorage.setItem('suporte_nao_lidas', novo);
+        return novo;
+      });
+    });
+
+    // Limpa badge quando o utilizador visita a página de suporte
+    const limparBadge = () => {
+      setNaoLidas(0);
+      localStorage.setItem('suporte_nao_lidas', '0');
+    };
+    window.addEventListener('suporte-lido', limparBadge);
+
+    return () => {
+      socket.disconnect();
+      window.removeEventListener('suporte-lido', limparBadge);
+    };
+  }, []);
 
   const handlePesquisa = (e) => {
     e.preventDefault();
@@ -169,8 +214,13 @@ export default function Navbar() {
                   </Link>
                 ) : (
                   <>
-                    <Link to="/perfil" onClick={fecharTudo} className="text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
+                    <Link to="/perfil" onClick={fecharTudo} className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
                       <User size={20} strokeWidth={1.5} />
+                      {naoLidas > 0 && (
+                        <span className="absolute -top-1.5 -right-2 bg-[#C0392B] text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-medium">
+                          {naoLidas}
+                        </span>
+                      )}
                     </Link>
                     <Link to="/carrinho" onClick={fecharTudo} className="relative text-[#4A5C4A] hover:text-[#3D6B4A] transition-colors">
                       <ShoppingBag size={20} strokeWidth={1.5} />

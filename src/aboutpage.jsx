@@ -33,7 +33,7 @@ const numeros = [
   { valor: "2023", label: "Ano de fundação" },
   { valor: "100%", label: "Dedicação" },
   { valor: "∞", label: "Paixão pela moda" },
-  { valor: "Em breve", label: "Loja física" },
+  { valor: "Vila Maior", label: "Loja física" },
 ];
 
 export default function AboutPage() {

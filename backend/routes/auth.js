@@ -136,7 +136,8 @@ router.post('/esqueci-senha', async (req, res) => {
       [resetToken, resetTokenExpira, utilizadorId]
     );
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/recuperar-senha/${resetToken}`;
+    const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const resetUrl = `${baseUrl}/recuperar-senha/${resetToken}`;
 
     const mailOptions = {
       from: `"Moda Chique" <${process.env.EMAIL_USER}>`,

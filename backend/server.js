@@ -1,13 +1,31 @@
-const express = require('express');
-const cors = require('cors');
+const express    = require('express');
+const cors       = require('cors');
+const http       = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
-const db = require('./db');
+const db        = require('./db');
 const adminAuth = require('./middleware/admin');
+const path      = require('path');
 
-const app = express();
+const app        = express();
+const httpServer = http.createServer(app);
+const io         = new Server(httpServer, { cors: { origin: '*' } });
+
+// Torna o io disponível nas rotas via req.app.get('io')
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  socket.on('entrar_admin',   ()  => socket.join('admin'));
+  socket.on('entrar_suporte', (id) => socket.join(`suporte_${id}`));
+  socket.on('entrar_ticket',  (id) => socket.join(`ticket_${id}`));
+  socket.on('sair_ticket',    (id) => socket.leave(`ticket_${id}`));
+});
 
 app.use(cors());
 app.use(express.json());
+
+// ── Servir imagens locais ─────────────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/produtos', require('./routes/produtos'));
@@ -60,7 +78,6 @@ async function runMigrations() {
       console.log('Migração: hex_cor adicionada a variante');
     }
     // 3. Corrige unique constraint imagem_unica para incluir cor
-    //    (o modelo antigo era (id_produto, ordem); o novo é (id_produto, ordem, cor))
     const [idxCols] = await db.query(
       `SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY SEQ_IN_INDEX) AS cols
        FROM information_schema.STATISTICS
@@ -69,7 +86,6 @@ async function runMigrations() {
     );
     const colsAtuais = idxCols[0]?.cols || '';
     if (colsAtuais && !colsAtuais.includes('cor')) {
-      // Garante índice simples em id_produto antes de dropar o único que cobre o FK
       if (!(await idxExists('imagens_produto', 'idx_id_produto'))) {
         await db.query('ALTER TABLE imagens_produto ADD INDEX idx_id_produto (id_produto)');
       }
@@ -110,11 +126,11 @@ async function runMigrations() {
 runMigrations();
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Servidor a correr na porta ${PORT}`);
 });
 
-server.on('error', (err) => {
+httpServer.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`Erro: a porta ${PORT} já está em uso. Fecha o servidor anterior e tenta novamente.`);
   } else {
